@@ -11,10 +11,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-/** Learn screen - diagonal lesson path, 1:1 with screenshot 072013. */
+/** Learn screen - scrollable lesson path with large touch targets. */
 public class LearnScreen {
 
-    private static final int LESSON_COUNT = 9;
+    private static final int LESSON_COUNT = 12;
 
     public static View build(final MainActivity main) {
         final Context c = main;
@@ -37,7 +37,7 @@ public class LearnScreen {
         root.addView(top, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 34)));
 
-        // ---- path area (lattice + coach overlay) ----
+        // ---- path area (internally scrollable lattice + pinned coach overlay) ----
         FrameLayout area = new FrameLayout(c);
         area.setClipChildren(true);
         area.addView(new LearnPathView(c), new FrameLayout.LayoutParams(
@@ -47,8 +47,8 @@ public class LearnScreen {
         coach.setImageResource(R.drawable.avatar_coach_learn);
         coach.setScaleType(ImageView.ScaleType.FIT_XY);
         FrameLayout.LayoutParams cp = new FrameLayout.LayoutParams(
-                Ui.dp(c, 41), Ui.dp(c, 48), Gravity.TOP | Gravity.START);
-        cp.leftMargin = Ui.dp(c, 24);
+                Ui.dp(c, 46), Ui.dp(c, 54), Gravity.TOP | Gravity.START);
+        cp.leftMargin = Ui.dp(c, 22);
         cp.topMargin = Ui.dp(c, 8);
         area.addView(coach, cp);
 
@@ -73,26 +73,26 @@ public class LearnScreen {
         GradientDrawable bandBg = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
                 new int[]{0xFF1E3133, 0xFF16454F, 0xFF0A4F5D});
         band.setBackground(bandBg);
-        TextView bandText = Ui.text(c, "Learn To Play", 14, Ui.WHITE, true);
+        TextView bandText = Ui.text(c, "Learn To Play", 16.5f, Ui.WHITE, true);
         FrameLayout.LayoutParams btp = new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
                 Gravity.START | Gravity.CENTER_VERTICAL);
         btp.leftMargin = Ui.dp(c, 55);
         band.addView(bandText, btp);
         root.addView(band, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 44)));
+                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 54)));
 
         // ---- bottom action bar ----
         LinearLayout actions = Ui.linear(c, LinearLayout.HORIZONTAL);
         actions.setGravity(Gravity.CENTER_VERTICAL);
         actions.setBackgroundColor(0xFF242624);
-        actions.setPadding(Ui.dp(c, 27), 0, Ui.dp(c, 26), 0);
+        actions.setPadding(Ui.dp(c, 22), 0, Ui.dp(c, 22), 0);
 
-        TextView listGlyph = Ui.glyph(c, "menu", 17, 0xFFC9C7C3);
+        TextView listGlyph = Ui.glyph(c, "menu", 22, 0xFFC9C7C3);
         listGlyph.setGravity(Gravity.CENTER);
-        listGlyph.setBackground(Ui.round(0xFF383A38, 6, c));
+        listGlyph.setBackground(Ui.round(0xFF383A38, 8, c));
         listGlyph.setLayoutParams(new LinearLayout.LayoutParams(
-                Ui.dp(c, 32), Ui.dp(c, 32)));
+                Ui.dp(c, 46), Ui.dp(c, 46)));
         listGlyph.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) {
                 Toast.makeText(c, "Lessons: King, Knight, Rook, Bishop, Queen, Pawn, Capturing",
@@ -101,11 +101,11 @@ public class LearnScreen {
         });
         actions.addView(listGlyph);
 
-        TextView nextLesson = Ui.text(c, "Next Lesson", 13.5f, Ui.WHITE, true);
+        TextView nextLesson = Ui.text(c, "Next Lesson", 15.5f, Ui.WHITE, true);
         nextLesson.setGravity(Gravity.CENTER);
-        nextLesson.setBackground(Ui.greenFill(c, 6));
-        LinearLayout.LayoutParams nlp = new LinearLayout.LayoutParams(0, Ui.dp(c, 37), 1f);
-        nlp.setMargins(Ui.dp(c, 9), 0, 0, 0);
+        nextLesson.setBackground(Ui.greenFill(c, 7));
+        LinearLayout.LayoutParams nlp = new LinearLayout.LayoutParams(0, Ui.dp(c, 48), 1f);
+        nlp.setMargins(Ui.dp(c, 10), 0, 0, 0);
         nextLesson.setLayoutParams(nlp);
         nextLesson.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) {
@@ -121,7 +121,7 @@ public class LearnScreen {
         });
         actions.addView(nextLesson);
         root.addView(actions, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 49)));
+                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 60)));
 
         return root;
     }
@@ -135,7 +135,12 @@ public class LearnScreen {
             case 4: return "The queen is the most powerful piece - she does it all!";
             case 5: return "Pawns move forward one, but capture diagonally.";
             case 6: return "Capture an enemy piece by moving onto its square.";
-            default: return "Check! Attack the king so he cannot escape.";
+            case 7: return "Check! Attack the king so he cannot escape.";
+            case 8: return "Checkmate - the king is trapped and the game is won!";
+            case 9: return "Castle to tuck your king away and activate a rook.";
+            case 10: return "En passant - the sneakiest pawn capture in chess!";
+            case 11: return "Promote your pawn to a queen on the last rank!";
+            default: return "You've mastered the basics - keep practicing!";
         }
     }
 }

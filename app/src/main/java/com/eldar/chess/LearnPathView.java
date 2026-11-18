@@ -12,26 +12,31 @@ import android.graphics.PorterDuffColorFilter;
 import android.graphics.RadialGradient;
 import android.graphics.RectF;
 import android.graphics.Shader;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Toast;
 
-/** Diagonal lesson lattice behind the Learn screen (screenshot 072013). */
+/** Learn screen lesson path with large touch-friendly level diamonds. */
 public class LearnPathView extends View {
 
-    // column centres + lattice pitch measured on the reference (dp @ 1.473 px/dp)
-    private static final float COL_A = 125.6f, COL_B = 181.8f, COL_C = 234.4f;
+    // column centres widened so the bigger diamonds keep their spacing
+    private static final float COL_A = 110f, COL_B = 180f, COL_C = 250f;
     private static final float PITCH = 52.6f;
-    private static final float SIDE = 53.3f;
-    private static final float RADIUS = 8f;
-    private static final float SS_H = 535f;      // path height in the screenshot
-    private static final float MINT_Y = 471.8f;  // mint diamond centre in the screenshot
+    private static final float SIDE = 64f;          // lesson diamond side (was 53.3)
+    private static final float RADIUS = 9f;
+    private static final float LATTICE_SIDE = 53.3f;
+    private static final float LATTICE_RADIUS = 8f;
+    public static final float CONTENT_H = 900f;     // scrollable path height
+    private static final float LESSON_TOP = 130f, LESSON_PITCH = 55f;
+    private static final float MINT_Y = 797f;
 
-    // lesson chain: {column x, y, glyph id}
-    private static final float[][] LESSONS = {
-            {COL_B, 69.2f}, {COL_A, 115.4f}, {COL_B, 149.4f}, {COL_C, 196.9f},
-            {COL_B, 237.6f}, {COL_A, 285.1f}, {COL_B, 325.9f}, {COL_C, 366.6f},
-            {COL_B, 407.3f}
-    };
-    private static final int[] GLYPH = {0, 1, 2, 3, 4, 5, 6, 7, 8};
+    private static final float[] COLS = {COL_B, COL_A, COL_B, COL_C, COL_B, COL_A,
+            COL_B, COL_C, COL_B, COL_A, COL_B, COL_C};
+    private static final int[] GLYPH = {0, 1, 2, 3, 4, 5, 6, 7, 8, 0, 7, 8};
+
+    public static final String[] LESSON_NAMES = {"Move the King", "The Knight", "The Rook",
+            "The Bishop", "The Queen", "The Pawn", "Capturing", "Check", "Checkmate",
+            "Castling", "En Passant", "Promotion"};
 
     private static final int LATTICE = 0xFF1B1917;
     private static final int TEAL_TOP = 0xFF265050;
@@ -46,6 +51,10 @@ public class LearnPathView extends View {
 
     private Bitmap wPawn, wQueen, wRook, wBishop, wKnight;
     private Bitmap gKing, gPawn, gKnight, gBishop, gQueen, gRook;
+
+    private float touchX, touchY;
+    private float scrollY, lastY;
+    private boolean dragging;
 
     public LearnPathView(Context c) {
         super(c);
@@ -65,10 +74,22 @@ public class LearnPathView extends View {
 
     private float dp(float v) { return v * getResources().getDisplayMetrics().density; }
 
+    @Override protected void onSizeChanged(int w, int h, int ow, int oh) {
+        scrollY = Math.max(0, dp(CONTENT_H) - h);
+    }
+
     @Override protected void onDraw(Canvas cv) {
-        float w = getWidth(), h = getHeight();
-        float shift = h - dp(SS_H);
-        float mintY = dp(MINT_Y) + shift;
+        float w = getWidth();
+        float h = dp(CONTENT_H);
+
+        // viewport backdrop (shows through if content is shorter than the view)
+        solid.setShader(null);
+        solid.setStyle(Paint.Style.FILL);
+        solid.setColor(0xFF262421);
+        cv.drawRect(0, 0, w, getHeight(), solid);
+
+        cv.save();
+        cv.translate(0, -scrollY);
 
         // page backdrop
         solid.setShader(null);
@@ -80,7 +101,7 @@ public class LearnPathView extends View {
         solid.setColor(LATTICE);
         solid.setShadowLayer(dp(4), 0, dp(1.5f), 0x38000000);
         int cols = (int) Math.ceil(w / dp(PITCH)) + 4;
-        float colPitch = dp(PITCH), side = dp(SIDE), rad = dp(RADIUS);
+        float colPitch = dp(PITCH), side = dp(LATTICE_SIDE), rad = dp(LATTICE_RADIUS);
         for (int i = -3; i < cols; i++) {
             float cx = dp(COL_B) + (i - 2) * colPitch;
             if (cx < -side || cx > w + side) continue;
@@ -96,29 +117,84 @@ public class LearnPathView extends View {
         solid.setShadowLayer(0, 0, 0, 0);
 
         // teal lesson diamonds
-        for (int i = 0; i < LESSONS.length; i++) {
-            float cx = dp(LESSONS[i][0]);
-            float cy = dp(LESSONS[i][1]) + shift;
+        for (int i = 0; i < COLS.length; i++) {
+            float cx = dp(COLS[i]);
+            float cy = dp(LESSON_TOP + i * LESSON_PITCH);
             drawTeal(cv, cx, cy, i == 1);
             drawGlyph(cv, cx, cy, GLYPH[i]);
         }
 
         // current lesson: mint diamond with glow
-        drawMint(cv, dp(COL_A), mintY);
+        drawMint(cv, dp(COL_A), dp(MINT_Y));
 
         // 3D decorations
-        piece(cv, wPawn, dp(COL_C), dp(111.3f) + shift, 47.5f);
-        piece(cv, wQueen, dp(COL_A), dp(198.2f) + shift, 66.5f);
-        piece(cv, wRook, dp(COL_C), dp(283.8f) + shift, 56.3f);
-        piece(cv, wBishop, dp(COL_A), dp(371.3f) + shift, 61.8f);
-        piece(cv, wKnight, dp(COL_C), dp(461.0f) + shift, 50.2f);
+        piece(cv, wPawn, dp(COL_C), dp(160f), 52f);
+        piece(cv, wQueen, dp(COL_A), dp(270f), 73f);
+        piece(cv, wRook, dp(COL_C), dp(380f), 61f);
+        piece(cv, wBishop, dp(COL_A), dp(490f), 67f);
+        piece(cv, wKnight, dp(COL_C), dp(600f), 54f);
+
+        cv.restore();
+    }
+
+    private float hitRadius() { return dp(SIDE * 0.7071f); }
+
+    @Override public boolean onTouchEvent(MotionEvent e) {
+        switch (e.getActionMasked()) {
+            case MotionEvent.ACTION_DOWN:
+                touchX = e.getX();
+                touchY = e.getY();
+                lastY = touchY;
+                dragging = false;
+                return true;
+            case MotionEvent.ACTION_MOVE: {
+                float dy = e.getY() - lastY;
+                lastY = e.getY();
+                if (Math.abs(e.getY() - touchY) > dp(6)) dragging = true;
+                if (dragging) {
+                    float max = Math.max(0, dp(CONTENT_H) - getHeight());
+                    scrollY = Math.max(0, Math.min(max, scrollY - dy));
+                    invalidate();
+                }
+                return true;
+            }
+            case MotionEvent.ACTION_UP:
+                if (!dragging && Math.abs(e.getX() - touchX) < dp(12)
+                        && Math.abs(e.getY() - touchY) < dp(12)) {
+                    performClick();
+                    float ty = e.getY() + scrollY;
+                    for (int i = 0; i < COLS.length; i++) {
+                        float dx = Math.abs(e.getX() - dp(COLS[i]));
+                        float dy = Math.abs(ty - dp(LESSON_TOP + i * LESSON_PITCH));
+                        if (dx + dy <= hitRadius()) {
+                            Toast.makeText(getContext(), "Lesson " + (i + 1) + ": "
+                                    + LESSON_NAMES[i], Toast.LENGTH_SHORT).show();
+                            return true;
+                        }
+                    }
+                    float dx = Math.abs(e.getX() - dp(COL_A));
+                    float dy = Math.abs(ty - dp(MINT_Y));
+                    if (dx + dy <= hitRadius() + dp(2)) {
+                        Toast.makeText(getContext(), "Ready for the next lesson!",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                }
+                return true;
+            default:
+                return super.onTouchEvent(e);
+        }
+    }
+
+    @Override public boolean performClick() {
+        super.performClick();
+        return true;
     }
 
     private void drawTeal(Canvas cv, float cx, float cy, boolean bright) {
         float s = dp(SIDE) / 2;
         solid.setShader(new LinearGradient(cx - s, cy - s, cx + s, cy + s,
                 bright ? 0xFF356262 : TEAL_TOP, bright ? 0xFF204C4C : TEAL_BOT, Shader.TileMode.CLAMP));
-        solid.setShadowLayer(dp(7), 0, dp(3), 0x59000000);
+        solid.setShadowLayer(dp(8), 0, dp(3), 0x59000000);
         cv.save();
         cv.rotate(45f, cx, cy);
         cv.drawRoundRect(new RectF(cx - s, cy - s, cx + s, cy + s),
@@ -136,9 +212,9 @@ public class LearnPathView extends View {
         solid.setAlpha(150);
         solid.setStyle(Paint.Style.FILL);
         switch (id) {
-            case 0: glyphBitmap(cv, gKing, cx, cy, 32); break;
+            case 0: glyphBitmap(cv, gKing, cx, cy, 38); break;
             case 1: { // thick plus
-                float a = dp(7), l = dp(30);
+                float a = dp(8), l = dp(35);
                 RectF v = new RectF(cx - a / 2, cy - l / 2, cx + a / 2, cy + l / 2);
                 RectF hbar = new RectF(cx - l / 2, cy - a / 2, cx + l / 2, cy + a / 2);
                 cv.drawRoundRect(v, a / 2, a / 2, solid);
@@ -147,23 +223,23 @@ public class LearnPathView extends View {
             }
             case 2: drawAxe(cv, cx, cy); break;
             case 3: { // knight + cross + x
-                glyphBitmap(cv, gKnight, cx - dp(4), cy, 26);
-                float l = dp(8);
-                solid.setStrokeWidth(dp(2.4f));
+                glyphBitmap(cv, gKnight, cx - dp(4), cy, 31);
+                float l = dp(9);
+                solid.setStrokeWidth(dp(2.8f));
                 solid.setStrokeCap(Paint.Cap.ROUND);
                 solid.setStyle(Paint.Style.STROKE);
-                cv.drawLine(cx + dp(12), cy - dp(6), cx + dp(12), cy - dp(14), solid);
-                cv.drawLine(cx + dp(8), cy - dp(11), cx + dp(16), cy - dp(11), solid);
-                cv.drawLine(cx + dp(9), cy + dp(3), cx + dp(15), cy + dp(9), solid);
-                cv.drawLine(cx + dp(15), cy + dp(3), cx + dp(9), cy + dp(9), solid);
+                cv.drawLine(cx + dp(14), cy - dp(7), cx + dp(14), cy - dp(16), solid);
+                cv.drawLine(cx + dp(9), cy - dp(13), cx + dp(19), cy - dp(13), solid);
+                cv.drawLine(cx + dp(11), cy + dp(4), cx + dp(18), cy + dp(11), solid);
+                cv.drawLine(cx + dp(18), cy + dp(4), cx + dp(11), cy + dp(11), solid);
                 solid.setStyle(Paint.Style.FILL);
                 break;
             }
-            case 4: glyphBitmap(cv, gPawn, cx, cy, 24); break;
-            case 5: glyphBitmap(cv, gKnight, cx, cy, 28); break;
-            case 6: glyphBitmap(cv, gBishop, cx, cy, 28); break;
-            case 7: glyphBitmap(cv, gRook, cx, cy, 27); break;
-            default: glyphBitmap(cv, gQueen, cx, cy, 29); break;
+            case 4: glyphBitmap(cv, gPawn, cx, cy, 29); break;
+            case 5: glyphBitmap(cv, gKnight, cx, cy, 34); break;
+            case 6: glyphBitmap(cv, gBishop, cx, cy, 34); break;
+            case 7: glyphBitmap(cv, gRook, cx, cy, 33); break;
+            default: glyphBitmap(cv, gQueen, cx, cy, 35); break;
         }
         imgPaint.setColorFilter(null);
         imgPaint.setAlpha(255);
@@ -179,40 +255,40 @@ public class LearnPathView extends View {
 
     private void drawAxe(Canvas cv, float cx, float cy) {
         Path blade = new Path();
-        float top = cy - dp(14), bot = cy + dp(2);
+        float top = cy - dp(17), bot = cy + dp(3);
         blade.moveTo(cx - dp(2), top);
-        blade.lineTo(cx + dp(15), top - dp(2));
-        blade.lineTo(cx + dp(15), bot);
+        blade.lineTo(cx + dp(18), top - dp(2));
+        blade.lineTo(cx + dp(18), bot);
         blade.lineTo(cx - dp(2), bot - dp(2));
         blade.close();
         cv.drawPath(blade, solid);
-        cv.drawRect(cx - dp(3), top - dp(1), cx + dp(1), cy + dp(14), solid);
+        cv.drawRect(cx - dp(4), top - dp(1), cx + dp(1), cy + dp(17), solid);
         // tiny crown
         Path crown = new Path();
-        float by = cy + dp(14), wHalf = dp(7);
+        float by = cy + dp(17), wHalf = dp(8);
         crown.moveTo(cx - wHalf, by);
-        crown.lineTo(cx - wHalf, by - dp(5));
-        crown.lineTo(cx - wHalf / 2, by - dp(2));
-        crown.lineTo(cx, by - dp(5));
-        crown.lineTo(cx + wHalf / 2, by - dp(2));
-        crown.lineTo(cx + wHalf, by - dp(5));
+        crown.lineTo(cx - wHalf, by - dp(6));
+        crown.lineTo(cx - wHalf / 2, by - dp(2.5f));
+        crown.lineTo(cx, by - dp(6));
+        crown.lineTo(cx + wHalf / 2, by - dp(2.5f));
+        crown.lineTo(cx + wHalf, by - dp(6));
         crown.lineTo(cx + wHalf, by);
         crown.close();
         cv.drawPath(crown, solid);
     }
 
     private void drawMint(Canvas cv, float cx, float cy) {
-        float s = dp(SIDE) / 2 + dp(1.5f);
+        float s = dp(SIDE) / 2 + dp(2);
         // outer glow
         Paint glow = new Paint(Paint.ANTI_ALIAS_FLAG);
-        glow.setShader(new RadialGradient(cx, cy, dp(64),
+        glow.setShader(new RadialGradient(cx, cy, dp(76),
                 new int[]{0x7A5CF0C9, 0x335CF0C9, 0x005CF0C9},
                 new float[]{0f, 0.55f, 1f}, Shader.TileMode.CLAMP));
-        cv.drawCircle(cx, cy, dp(64), glow);
+        cv.drawCircle(cx, cy, dp(76), glow);
         // darker under-edge for depth
         solid.setShader(null);
         solid.setColor(0xFF2FA98F);
-        drawRotRect(cv, cx, cy + dp(5), s, dp(RADIUS));
+        drawRotRect(cv, cx, cy + dp(6), s, dp(RADIUS));
         // mint diamond
         solid.setShader(new LinearGradient(cx - s, cy - s, cx - s, cy + s,
                 MINT_TOP, MINT_BOT, Shader.TileMode.CLAMP));
@@ -220,45 +296,45 @@ public class LearnPathView extends View {
         solid.setShader(null);
         // white king icon
         solid.setColor(0xFFFFFFFF);
-        float kw = dp(27), kh = dp(27);
+        float kw = dp(33), kh = dp(33);
         float l = cx - kw / 2, r = cx + kw / 2;
         float t = cy - kh / 2 - dp(1), b = cy + kh / 2;
         // base bar
-        cv.drawRoundRect(new RectF(l + dp(2.5f), b - dp(4), r - dp(2.5f), b),
-                dp(1.5f), dp(1.5f), solid);
+        cv.drawRoundRect(new RectF(l + dp(3), b - dp(5), r - dp(3), b),
+                dp(1.8f), dp(1.8f), solid);
         // crown body: two rounded shoulders with curled tips
         Path king = new Path();
-        king.moveTo(l + dp(5), b - dp(5.5f));
-        king.lineTo(l + dp(5), t + dp(11));
-        king.cubicTo(l + dp(5), t + dp(14), l + dp(9), t + dp(14.5f), l + dp(10.5f), t + dp(11.5f));
-        king.lineTo(l + dp(12), t + dp(9));
-        king.cubicTo(l + dp(12.5f), t + dp(6), cx - dp(2), t + dp(5), cx, t + dp(5.5f));
-        king.cubicTo(cx + dp(2), t + dp(5), r - dp(12.5f), t + dp(6), r - dp(12), t + dp(9));
-        king.lineTo(r - dp(10.5f), t + dp(11.5f));
-        king.cubicTo(r - dp(9), t + dp(14.5f), r - dp(5), t + dp(14), r - dp(5), t + dp(11));
-        king.lineTo(r - dp(5), b - dp(5.5f));
+        king.moveTo(l + dp(6), b - dp(7));
+        king.lineTo(l + dp(6), t + dp(13));
+        king.cubicTo(l + dp(6), t + dp(17), l + dp(11), t + dp(17.5f), l + dp(13), t + dp(14));
+        king.lineTo(l + dp(15), t + dp(11));
+        king.cubicTo(l + dp(15.5f), t + dp(7), cx - dp(2.5f), t + dp(6), cx, t + dp(6.5f));
+        king.cubicTo(cx + dp(2.5f), t + dp(6), r - dp(15.5f), t + dp(7), r - dp(15), t + dp(11));
+        king.lineTo(r - dp(13), t + dp(14));
+        king.cubicTo(r - dp(11), t + dp(17.5f), r - dp(6), t + dp(17), r - dp(6), t + dp(13));
+        king.lineTo(r - dp(6), b - dp(7));
         king.close();
         cv.drawPath(king, solid);
         // cross
-        cv.drawRoundRect(new RectF(cx - dp(1.4f), t - dp(5), cx + dp(1.4f), t + dp(5.5f)),
-                dp(0.7f), dp(0.7f), solid);
-        cv.drawRoundRect(new RectF(cx - dp(5), t - dp(1.4f), cx + dp(5), t + dp(1.4f)),
-                dp(0.7f), dp(0.7f), solid);
+        cv.drawRoundRect(new RectF(cx - dp(1.7f), t - dp(6), cx + dp(1.7f), t + dp(7)),
+                dp(0.8f), dp(0.8f), solid);
+        cv.drawRoundRect(new RectF(cx - dp(6), t - dp(1.7f), cx + dp(6), t + dp(1.7f)),
+                dp(0.8f), dp(0.8f), solid);
         // Next pill
-        float pw = dp(58), ph = dp(24.5f), py = cy - dp(56.3f);
-        solid.setShadowLayer(dp(7), 0, dp(2), 0x66000000);
+        float pw = dp(70), ph = dp(29), py = cy - dp(72);
+        solid.setShadowLayer(dp(8), 0, dp(2.5f), 0x66000000);
         solid.setColor(0xFFF8F8F8);
         cv.drawRoundRect(new RectF(cx - pw / 2, py - ph / 2, cx + pw / 2, py + ph / 2),
-                dp(6), dp(6), solid);
+                dp(7), dp(7), solid);
         solid.setShadowLayer(0, 0, 0, 0);
         // tail
         cv.save();
         cv.rotate(45f, cx, py + ph / 2 + dp(2));
-        cv.drawRect(cx - dp(4), py + ph / 2 - dp(6), cx + dp(4), py + ph / 2 + dp(2), solid);
+        cv.drawRect(cx - dp(5), py + ph / 2 - dp(7), cx + dp(5), py + ph / 2 + dp(2), solid);
         cv.restore();
         // label
         text.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
-        text.setTextSize(dp(11.5f));
+        text.setTextSize(dp(13));
         text.setColor(0xFF1F1F1F);
         text.setTextAlign(Paint.Align.CENTER);
         Paint.FontMetrics fm = text.getFontMetrics();
