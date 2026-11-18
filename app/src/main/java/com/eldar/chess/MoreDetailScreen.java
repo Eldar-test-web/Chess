@@ -6,8 +6,19 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.LinearGradient;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.RectF;
+import android.graphics.Shader;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.media.AudioManager;
 import android.media.ToneGenerator;
 import android.os.Handler;
@@ -18,6 +29,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -275,67 +287,575 @@ public class MoreDetailScreen {
     }
 
     // ---------------------------------------------------------------- profile
+    // Replica of the real chess.com profile: piece-art banner, avatar block,
+    // joined/friends/views, Add Friends, highlight tiles, ratings, game history,
+    // friends and awards.
 
     private static View profileScreen() {
         final Context c = main;
         final AppState st = main.state;
-        Page pg = newPage("Profile");
 
-        LinearLayout head = card(c);
-        head.setGravity(Gravity.CENTER_HORIZONTAL);
-        head.addView(circle(c, st.playerName.isEmpty() ? "E"
-                : st.playerName.substring(0, 1).toUpperCase(), Ui.GREEN_DARK, 76, 30));
-        TextView name = Ui.text(c, st.playerName, 19, Ui.WHITE, true);
-        name.setGravity(Gravity.CENTER);
-        LinearLayout.LayoutParams np = new LinearLayout.LayoutParams(
+        ScrollView scroll = new ScrollView(c);
+        scroll.setFillViewport(true);
+        scroll.setBackground(Ui.pageBg());
+        LinearLayout root = Ui.linear(c, LinearLayout.VERTICAL);
+        scroll.addView(root, new ScrollView.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        FrameLayout banner = new FrameLayout(c);
+        banner.addView(new ProfileBanner(c), new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 178)));
+        LinearLayout topBar = Ui.linear(c, LinearLayout.HORIZONTAL);
+        topBar.setGravity(Gravity.CENTER_VERTICAL);
+        topBar.setPadding(Ui.dp(c, 16), Ui.dp(c, 8), Ui.dp(c, 14), Ui.dp(c, 8));
+        TextView backBtn = Ui.glyph(c, "arrow_back", 23, Ui.WHITE);
+        backBtn.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View v) { back(main); }
+        });
+        topBar.addView(backBtn);
+        topBar.addView(Ui.spacerWeight(c, 1f));
+        ImageView qr = new ImageView(c);
+        qr.setImageDrawable(qrGlyph(c, 24, Ui.WHITE));
+        qr.setPadding(Ui.dp(c, 7), Ui.dp(c, 7), Ui.dp(c, 7), Ui.dp(c, 7));
+        qr.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View v) {
+                new AlertDialog.Builder(main).setTitle("QR code")
+                        .setMessage("Let a friend scan your QR code in the Chess app to add you.")
+                        .setPositiveButton("OK", null).show();
+            }
+        });
+        topBar.addView(qr);
+        TextView gear = Ui.glyph(c, "settings", 23, Ui.WHITE);
+        gear.setPadding(Ui.dp(c, 12), 0, 0, 0);
+        gear.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View v) { open(main, "settings"); }
+        });
+        topBar.addView(gear);
+        banner.addView(topBar, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.TOP));
+        root.addView(banner, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 178)));
+
+        LinearLayout content = Ui.linear(c, LinearLayout.VERTICAL);
+        content.setPadding(Ui.dp(c, 16), Ui.dp(c, 6), Ui.dp(c, 16), Ui.dp(c, 28));
+        root.addView(content, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        // avatar + name
+        LinearLayout idRow = Ui.linear(c, LinearLayout.HORIZONTAL);
+        idRow.setGravity(Gravity.CENTER_VERTICAL);
+        FrameLayout av = new FrameLayout(c);
+        View avTile = new View(c);
+        avTile.setBackground(Ui.round(0xFFE9E7E2, 14, c));
+        av.addView(avTile, new FrameLayout.LayoutParams(Ui.dp(c, 100), Ui.dp(c, 100)));
+        ImageView pawn = new ImageView(c);
+        pawn.setImageResource(R.drawable.avatar_pawn);
+        pawn.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        av.addView(pawn, new FrameLayout.LayoutParams(Ui.dp(c, 100), Ui.dp(c, 100)));
+        GradientDrawable dotBg = Ui.round(0xFF7FA650, 13, c);
+        dotBg.setStroke(Ui.dp(c, 3), 0xFF262421);
+        View dot = new View(c);
+        dot.setBackground(dotBg);
+        FrameLayout.LayoutParams dotLp = new FrameLayout.LayoutParams(
+                Ui.dp(c, 26), Ui.dp(c, 26), Gravity.END | Gravity.BOTTOM);
+        dotLp.setMargins(0, 0, Ui.dp(c, 3), Ui.dp(c, 3));
+        av.addView(dot, dotLp);
+        idRow.addView(av);
+
+        LinearLayout names = Ui.linear(c, LinearLayout.VERTICAL);
+        LinearLayout.LayoutParams namesLp = new LinearLayout.LayoutParams(
+                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        namesLp.leftMargin = Ui.dp(c, 16);
+        names.setLayoutParams(namesLp);
+        LinearLayout nameRow = Ui.linear(c, LinearLayout.HORIZONTAL);
+        nameRow.setGravity(Gravity.CENTER_VERTICAL);
+        nameRow.addView(Ui.text(c, st.playerName, 20, Ui.WHITE, true));
+        ImageView flag = new ImageView(c);
+        flag.setImageResource(R.drawable.flag_az);
+        LinearLayout.LayoutParams flp = new LinearLayout.LayoutParams(
+                Ui.dp(c, 24), Ui.dp(c, 17));
+        flp.leftMargin = Ui.dp(c, 8);
+        nameRow.addView(flag, flp);
+        names.addView(nameRow);
+        TextView realName = Ui.text(c, "Azerbaijan", 13.5f, Ui.GREY, false);
+        LinearLayout.LayoutParams rnp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        np.topMargin = Ui.dp(c, 8);
-        name.setLayoutParams(np);
-        head.addView(name);
-        TextView meta = Ui.text(c, "Azerbaijan  •  Club player", 12, Ui.GREY, false);
-        meta.setGravity(Gravity.CENTER);
-        head.addView(meta);
-        head.addView(button(c, "Edit name", false, new View.OnClickListener() {
+        rnp.topMargin = Ui.dp(c, 4);
+        realName.setLayoutParams(rnp);
+        realName.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) { editName(); }
+        });
+        names.addView(realName);
+        idRow.addView(names);
+        content.addView(idRow);
+
+        // joined / friends / views
+        LinearLayout joined = Ui.linear(c, LinearLayout.HORIZONTAL);
+        LinearLayout.LayoutParams jlp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        jlp.topMargin = Ui.dp(c, 20);
+        joined.setLayoutParams(jlp);
+        joined.addView(statCol(c, "Nov 18, 2026", "Joined", Gravity.START, 12.5f), statLp());
+        joined.addView(statCol(c, "0", "Friends", Gravity.CENTER, 16.5f), statLp());
+        joined.addView(statCol(c, "0", "Views", Gravity.END, 16.5f), statLp());
+        content.addView(joined);
+
+        // add friends + qr
+        LinearLayout addRow = Ui.linear(c, LinearLayout.HORIZONTAL);
+        LinearLayout.LayoutParams arlp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        arlp.topMargin = Ui.dp(c, 16);
+        addRow.setLayoutParams(arlp);
+        LinearLayout addBtn = Ui.linear(c, LinearLayout.HORIZONTAL);
+        addBtn.setGravity(Gravity.CENTER);
+        addBtn.setBackground(Ui.round(0xFF35322E, 12, c));
+        addBtn.addView(Ui.glyph(c, "person_add", 20, Ui.WHITE));
+        TextView addTv = Ui.text(c, "Add Friends", 17, Ui.WHITE, true);
+        LinearLayout.LayoutParams atlp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        atlp.leftMargin = Ui.dp(c, 10);
+        addTv.setLayoutParams(atlp);
+        addBtn.addView(addTv);
+        addBtn.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View v) { main.navigate("friends"); }
+        });
+        addRow.addView(addBtn, new LinearLayout.LayoutParams(
+                0, Ui.dp(c, 54), 1f));
+        FrameLayout qrBtn = new FrameLayout(c);
+        qrBtn.setBackground(Ui.round(0xFF35322E, 12, c));
+        ImageView qrImg = new ImageView(c);
+        qrImg.setImageDrawable(qrGlyph(c, 24, Ui.WHITE));
+        qrBtn.addView(qrImg, new FrameLayout.LayoutParams(
+                Ui.dp(c, 24), Ui.dp(c, 24), Gravity.CENTER));
+        LinearLayout.LayoutParams qlp = new LinearLayout.LayoutParams(Ui.dp(c, 54), Ui.dp(c, 54));
+        qlp.leftMargin = Ui.dp(c, 10);
+        addRow.addView(qrBtn, qlp);
+        content.addView(addRow);
+
+        // highlight tiles
+        LinearLayout badges = Ui.linear(c, LinearLayout.HORIZONTAL);
+        LinearLayout.LayoutParams blp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        blp.topMargin = Ui.dp(c, 14);
+        badges.setLayoutParams(blp);
+        badges.addView(badgeTile(c, R.drawable.icon_flame,
+                st.streak + " days", 0xFF453D20, 0), badgeLp(c));
+        badges.addView(badgeTile(c, R.drawable.more_playersleague,
+                "Wood", 0xFF4A3B26, 0xFF9A6B3F), badgeLp(c));
+        badges.addView(badgeTile(c, R.drawable.watch_trophy,
+                "Wood", 0xFF473726, 0), badgeLp(c));
+        content.addView(badges);
+
+        // ratings
+        content.addView(profileHeader(c, "Ratings", null, null));
+        LinearLayout ratingCard = Ui.linear(c, LinearLayout.VERTICAL);
+        ratingCard.setBackground(Ui.round(0x14FFFFFF, 12, c));
+        ratingCard.setPadding(Ui.dp(c, 10), Ui.dp(c, 10), Ui.dp(c, 10), Ui.dp(c, 14));
+        LinearLayout.LayoutParams rclp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        rclp.topMargin = Ui.dp(c, 10);
+        ratingCard.setLayoutParams(rclp);
+        LinearLayout ratingRow = Ui.linear(c, LinearLayout.HORIZONTAL);
+        ratingRow.addView(ratingTile(c, R.drawable.rate_bullet, "Bullet", st.bulletRating), tileLp(c));
+        ratingRow.addView(ratingTile(c, R.drawable.rate_blitz, "Blitz", st.blitzRating), tileLp(c));
+        ratingRow.addView(ratingTile(c, R.drawable.icon_rapid, "Rapid", st.rapidRating), tileLp(c));
+        ratingRow.addView(ratingTile(c, R.drawable.rate_daily, "Daily", st.dailyRating), tileLp(c));
+        ratingCard.addView(ratingRow);
+        if (st.gamesPlayed == 0) {
+            TextView msg = Ui.text(c, "Play rated games to see your stats", 15, Ui.WHITE, true);
+            msg.setGravity(Gravity.CENTER);
+            LinearLayout.LayoutParams mlp = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            mlp.topMargin = Ui.dp(c, 15);
+            msg.setLayoutParams(mlp);
+            ratingCard.addView(msg);
+        }
+        TextView how = Ui.text(c, "How do ratings work?", 13.5f, 0xFFCFC9C1, false);
+        how.setGravity(Gravity.CENTER);
+        how.setPaintFlags(how.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
+        LinearLayout.LayoutParams hlp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        hlp.topMargin = Ui.dp(c, 10);
+        how.setLayoutParams(hlp);
+        how.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View v) {
+                new AlertDialog.Builder(main).setTitle("How do ratings work?")
+                        .setMessage("Ratings follow the Glicko system. Winning against a "
+                                + "stronger opponent gives more points, and the pool rating "
+                                + "(bullet, blitz, rapid, daily) is shown on your profile.")
+                        .setPositiveButton("OK", null).show();
+            }
+        });
+        ratingCard.addView(how);
+        content.addView(ratingCard);
+
+        // game history
+        LinearLayout ghHead = Ui.linear(c, LinearLayout.HORIZONTAL);
+        ghHead.setGravity(Gravity.CENTER_VERTICAL);
+        LinearLayout.LayoutParams ghlp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        ghlp.topMargin = Ui.dp(c, 22);
+        ghHead.setLayoutParams(ghlp);
+        ghHead.addView(Ui.text(c, "Game History", 17.5f, Ui.WHITE, true));
+        TextView cnt = Ui.text(c, String.valueOf(Math.max(1, st.gamesPlayed)),
+                11.5f, 0xFFCFC9C1, true);
+        cnt.setGravity(Gravity.CENTER);
+        cnt.setBackground(Ui.round(0xFF3B3834, 11, c));
+        cnt.setPadding(Ui.dp(c, 7), Ui.dp(c, 2), Ui.dp(c, 7), Ui.dp(c, 2));
+        LinearLayout.LayoutParams cntLp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        cntLp.leftMargin = Ui.dp(c, 8);
+        ghHead.addView(cnt, cntLp);
+        ghHead.addView(Ui.spacerWeight(c, 1f));
+        ghHead.addView(Ui.text(c, "Accuracy", 13.5f, 0xFFCFC9C1, false));
+        content.addView(ghHead);
+
+        LinearLayout hist = Ui.linear(c, LinearLayout.HORIZONTAL);
+        hist.setGravity(Gravity.CENTER_VERTICAL);
+        hist.setBackground(Ui.round(0x12FFFFFF, 12, c));
+        hist.setPadding(Ui.dp(c, 10), Ui.dp(c, 10), Ui.dp(c, 10), Ui.dp(c, 10));
+        LinearLayout.LayoutParams histLp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        histLp.topMargin = Ui.dp(c, 10);
+        hist.setLayoutParams(histLp);
+        ImageView clock = new ImageView(c);
+        clock.setImageResource(R.drawable.icon_clock_small);
+        clock.setColorFilter(Ui.GREEN);
+        hist.addView(clock, new LinearLayout.LayoutParams(Ui.dp(c, 24), Ui.dp(c, 24)));
+        FrameLayout mini = new FrameLayout(c);
+        View miniTile = new View(c);
+        miniTile.setBackground(Ui.round(0xFFE9E7E2, 8, c));
+        mini.addView(miniTile, new FrameLayout.LayoutParams(Ui.dp(c, 40), Ui.dp(c, 40)));
+        ImageView miniPawn = new ImageView(c);
+        miniPawn.setImageResource(R.drawable.avatar_pawn);
+        miniPawn.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        mini.addView(miniPawn, new FrameLayout.LayoutParams(Ui.dp(c, 40), Ui.dp(c, 40)));
+        LinearLayout.LayoutParams miniLp = new LinearLayout.LayoutParams(Ui.dp(c, 40), Ui.dp(c, 40));
+        miniLp.leftMargin = Ui.dp(c, 10);
+        hist.addView(mini, miniLp);
+        LinearLayout histTexts = Ui.linear(c, LinearLayout.VERTICAL);
+        LinearLayout.LayoutParams htlp = new LinearLayout.LayoutParams(
+                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        htlp.leftMargin = Ui.dp(c, 10);
+        histTexts.setLayoutParams(htlp);
+        LinearLayout hNameRow = Ui.linear(c, LinearLayout.HORIZONTAL);
+        hNameRow.setGravity(Gravity.CENTER_VERTICAL);
+        String opp = st.lastOpponent.isEmpty() ? "No games yet" : st.lastOpponent;
+        TextView oppTv = Ui.text(c, opp, 15.5f, Ui.WHITE, true);
+        oppTv.setSingleLine(true);
+        oppTv.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        hNameRow.addView(oppTv);
+        histTexts.addView(hNameRow);
+        String sub = st.lastResult;
+        if (!st.lastAccuracy.isEmpty()) {
+            sub = sub.isEmpty() ? st.lastAccuracy + "% accuracy"
+                    : sub + "  •  " + st.lastAccuracy + "% accuracy";
+        }
+        if (!sub.isEmpty()) {
+            TextView subTv = Ui.text(c, sub, 12.5f, Ui.GREY, false);
+            subTv.setSingleLine(true);
+            histTexts.addView(subTv);
+        }
+        hist.addView(histTexts);
+        FrameLayout star = new FrameLayout(c);
+        star.setBackground(Ui.round(0xFF7FA650, 10, c));
+        star.addView(Ui.glyph(c, "star", 19, Ui.WHITE),
+                new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
+        star.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View v) {
+                Toast.makeText(main, "Game saved", Toast.LENGTH_SHORT).show();
+            }
+        });
+        LinearLayout.LayoutParams starLp = new LinearLayout.LayoutParams(
+                Ui.dp(c, 40), Ui.dp(c, 40));
+        starLp.leftMargin = Ui.dp(c, 8);
+        hist.addView(star, starLp);
+        content.addView(hist);
+
+        TextView all = Ui.text(c, "View All Games", 15, Ui.WHITE, true);
+        all.setGravity(Gravity.CENTER);
+        all.setBackground(Ui.round(0xFF35322E, 10, c));
+        LinearLayout.LayoutParams alp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 46));
+        alp.topMargin = Ui.dp(c, 10);
+        all.setLayoutParams(alp);
+        all.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View v) { open(main, "stats"); }
+        });
+        content.addView(all);
+
+        // friends
+        content.addView(profileHeader(c, "Friends", null, null));
+        HorizontalScrollView fhs = new HorizontalScrollView(c);
+        fhs.setHorizontalScrollBarEnabled(false);
+        LinearLayout fcards = Ui.linear(c, LinearLayout.HORIZONTAL);
+        LinearLayout.LayoutParams fcslp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        fcslp.topMargin = Ui.dp(c, 10);
+        fcards.setLayoutParams(fcslp);
+        fcards.addView(friendCard(c, R.drawable.fr_search, "Find Friends", new View.OnClickListener() {
+            @Override public void onClick(View v) { main.navigate("friends"); }
+        }), friendCardLp(c));
+        fcards.addView(friendCard(c, R.drawable.fri_share, "Share Profile", new View.OnClickListener() {
+            @Override public void onClick(View v) {
+                new AlertDialog.Builder(main).setTitle("Share profile")
+                        .setMessage(st.playerName + " — see my chess profile in the Chess app.")
+                        .setPositiveButton("OK", null).show();
+            }
+        }), friendCardLp(c));
+        fcards.addView(friendCard(c, R.drawable.fri_challenge, "Challenge a friend",
+                new View.OnClickListener() {
+                    @Override public void onClick(View v) { main.navigate("friends"); }
+                }), friendCardLp(c));
+        fhs.addView(fcards);
+        content.addView(fhs);
+
+        // awards
+        content.addView(profileHeader(c, "Awards", "View All", new View.OnClickListener() {
+            @Override public void onClick(View v) { open(main, "awards"); }
         }));
-        pg.root.addView(head);
+        HorizontalScrollView ahs = new HorizontalScrollView(c);
+        ahs.setHorizontalScrollBarEnabled(false);
+        LinearLayout acards = Ui.linear(c, LinearLayout.HORIZONTAL);
+        LinearLayout.LayoutParams acslp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        acslp.topMargin = Ui.dp(c, 10);
+        acards.setLayoutParams(acslp);
+        acards.addView(awardCard(c, "emoji_events", "First Victory",
+                st.gamesPlayed >= 1), awardLp(c));
+        acards.addView(awardCard(c, "extension", "Puzzle Rookie",
+                st.puzzlesSolved >= 100), awardLp(c));
+        acards.addView(awardCard(c, "school", "Lesson Starter",
+                st.learnProgress >= 1), awardLp(c));
+        acards.addView(awardCard(c, "whatshot", "On Fire",
+                st.streak >= 7), awardLp(c));
+        ahs.addView(acards);
+        content.addView(ahs);
 
-        pg.root.addView(section(c, "Ratings"));
-        LinearLayout row1 = Ui.linear(c, LinearLayout.HORIZONTAL);
-        row1.addView(ratingBox(c, "Bullet", st.bulletRating, "bolt"), weightLp(c, 1f));
-        row1.addView(ratingBox(c, "Blitz", st.blitzRating, "flash_on"), weightLp(c, 1f));
-        pg.root.addView(row1);
-        LinearLayout row2 = Ui.linear(c, LinearLayout.HORIZONTAL);
-        row2.addView(ratingBox(c, "Rapid", st.rapidRating, "schedule"), weightLp(c, 1f));
-        row2.addView(ratingBox(c, "Daily", st.dailyRating, "today"), weightLp(c, 1f));
-        pg.root.addView(row2);
-
-        pg.root.addView(section(c, "Stats"));
-        LinearLayout stats = card(c);
-        statsRow(c, stats, "Games played", String.valueOf(st.gamesPlayed));
-        statsRow(c, stats, "Puzzles solved", String.valueOf(st.puzzlesSolved));
-        statsRow(c, stats, "Lessons finished", String.valueOf(st.learnProgress));
-        statsRow(c, stats, "Current streak", st.streak + " days");
-        pg.root.addView(stats);
-
-        return pg.scroll;
+        return scroll;
     }
 
-    private static LinearLayout ratingBox(Context c, String label, int rating, String glyph) {
-        LinearLayout box = Ui.linear(c, LinearLayout.VERTICAL);
-        box.setBackground(Ui.round(0x1FFFFFFF, 12, c));
-        box.setPadding(Ui.dp(c, 12), Ui.dp(c, 12), Ui.dp(c, 12), Ui.dp(c, 12));
-        box.setGravity(Gravity.CENTER_HORIZONTAL);
-        LinearLayout titleRow = Ui.linear(c, LinearLayout.HORIZONTAL);
-        titleRow.setGravity(Gravity.CENTER);
-        titleRow.addView(Ui.glyph(c, glyph, 13, Ui.GREEN));
-        TextView lt = Ui.text(c, " " + label, 11.5f, Ui.GREY, false);
-        titleRow.addView(lt);
-        box.addView(titleRow);
-        TextView val = Ui.text(c, String.valueOf(rating), 21, Ui.WHITE, true);
-        val.setGravity(Gravity.CENTER);
-        box.addView(val);
-        return box;
+    private static LinearLayout profileHeader(Context c, String title, String action,
+                                              View.OnClickListener l) {
+        LinearLayout row = Ui.linear(c, LinearLayout.HORIZONTAL);
+        row.setGravity(Gravity.CENTER_VERTICAL);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        lp.topMargin = Ui.dp(c, 22);
+        row.setLayoutParams(lp);
+        row.addView(Ui.text(c, title, 17.5f, Ui.WHITE, true));
+        if (action != null) {
+            row.addView(Ui.spacerWeight(c, 1f));
+            TextView a = Ui.text(c, action, 13.5f, 0xFFCFC9C1, false);
+            a.setOnClickListener(l);
+            row.addView(a);
+        }
+        return row;
+    }
+
+    private static LinearLayout statCol(Context c, String value, String label, int gravity,
+                                        float valueSp) {
+        LinearLayout col = Ui.linear(c, LinearLayout.VERTICAL);
+        TextView v = Ui.text(c, value, valueSp, Ui.WHITE, true);
+        TextView l = Ui.text(c, label, 12, Ui.GREY, false);
+        v.setSingleLine(true);
+        v.setGravity(gravity);
+        l.setGravity(gravity);
+        v.setLayoutParams(new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        l.setLayoutParams(new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        col.addView(v);
+        col.addView(l);
+        return col;
+    }
+
+    private static LinearLayout.LayoutParams statLp() {
+        return new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+    }
+
+    private static LinearLayout badgeTile(Context c, int iconRes, String label, int bg, int tint) {
+        LinearLayout tile = Ui.linear(c, LinearLayout.VERTICAL);
+        tile.setGravity(Gravity.CENTER);
+        tile.setBackground(Ui.round(bg, 8, c));
+        ImageView iv = new ImageView(c);
+        iv.setImageResource(iconRes);
+        iv.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        if (tint != 0) iv.setColorFilter(tint);
+        tile.addView(iv, new LinearLayout.LayoutParams(Ui.dp(c, 36), Ui.dp(c, 36)));
+        TextView t = Ui.text(c, label, 15, Ui.WHITE, true);
+        t.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        lp.topMargin = Ui.dp(c, 6);
+        t.setLayoutParams(lp);
+        tile.addView(t);
+        return tile;
+    }
+
+    private static LinearLayout.LayoutParams badgeLp(Context c) {
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                0, Ui.dp(c, 88), 1f);
+        lp.setMargins(Ui.dp(c, 4), 0, Ui.dp(c, 4), 0);
+        return lp;
+    }
+
+    private static LinearLayout ratingTile(Context c, int iconRes, String label, int rating) {
+        LinearLayout tile = Ui.linear(c, LinearLayout.VERTICAL);
+        tile.setGravity(Gravity.CENTER_HORIZONTAL);
+        tile.setBackground(Ui.round(0xFF3A3733, 8, c));
+        tile.setPadding(Ui.dp(c, 6), Ui.dp(c, 10), Ui.dp(c, 6), Ui.dp(c, 10));
+        ImageView iv = new ImageView(c);
+        iv.setImageResource(iconRes);
+        iv.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        tile.addView(iv, new LinearLayout.LayoutParams(Ui.dp(c, 30), Ui.dp(c, 30)));
+        TextView t = Ui.text(c, label, 12.5f, 0xFFD5CFC7, false);
+        t.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        lp.topMargin = Ui.dp(c, 6);
+        t.setLayoutParams(lp);
+        tile.addView(t);
+        if (rating > 0) {
+            TextView val = Ui.text(c, String.valueOf(rating), 15.5f, Ui.WHITE, true);
+            val.setGravity(Gravity.CENTER);
+            tile.addView(val);
+        }
+        return tile;
+    }
+
+    private static LinearLayout.LayoutParams tileLp(Context c) {
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        lp.setMargins(Ui.dp(c, 4), 0, Ui.dp(c, 4), 0);
+        return lp;
+    }
+
+    private static LinearLayout friendCard(Context c, int iconRes, String label,
+                                           View.OnClickListener l) {
+        LinearLayout cardView = Ui.linear(c, LinearLayout.VERTICAL);
+        cardView.setGravity(Gravity.CENTER);
+        cardView.setBackground(Ui.round(0xFF33302D, 12, c));
+        cardView.setPadding(Ui.dp(c, 8), Ui.dp(c, 10), Ui.dp(c, 8), Ui.dp(c, 10));
+        ImageView iv = new ImageView(c);
+        iv.setImageResource(iconRes);
+        iv.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        cardView.addView(iv, new LinearLayout.LayoutParams(Ui.dp(c, 40), Ui.dp(c, 40)));
+        TextView t = Ui.text(c, label, 14, Ui.WHITE, true);
+        t.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        lp.topMargin = Ui.dp(c, 10);
+        t.setLayoutParams(lp);
+        cardView.addView(t);
+        cardView.setOnClickListener(l);
+        return cardView;
+    }
+
+    private static LinearLayout.LayoutParams friendCardLp(Context c) {
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                Ui.dp(c, 150), Ui.dp(c, 108));
+        lp.rightMargin = Ui.dp(c, 10);
+        return lp;
+    }
+
+    private static LinearLayout awardCard(Context c, String glyph, String title, boolean earned) {
+        LinearLayout cardView = Ui.linear(c, LinearLayout.VERTICAL);
+        cardView.setGravity(Gravity.CENTER);
+        cardView.setBackground(Ui.roundStroke(0xFFEDE1C6, 6, 0xFFC9B48E, 1.5f, c));
+        cardView.setPadding(Ui.dp(c, 8), Ui.dp(c, 10), Ui.dp(c, 8), Ui.dp(c, 10));
+        TextView icon = Ui.glyph(c, glyph, 30, 0xFF7A5A32);
+        cardView.addView(icon, new LinearLayout.LayoutParams(Ui.dp(c, 44), Ui.dp(c, 44)));
+        TextView t = Ui.text(c, title, 12, 0xFF4A3A22, true);
+        t.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        lp.topMargin = Ui.dp(c, 8);
+        t.setLayoutParams(lp);
+        cardView.addView(t);
+        cardView.setAlpha(earned ? 1f : 0.45f);
+        return cardView;
+    }
+
+    private static LinearLayout.LayoutParams awardLp(Context c) {
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                Ui.dp(c, 116), Ui.dp(c, 124));
+        lp.rightMargin = Ui.dp(c, 10);
+        return lp;
+    }
+
+    private static Drawable qrGlyph(Context c, int sizeDp, int color) {
+        int px = Math.max(12, Ui.dp(c, sizeDp));
+        Bitmap bmp = Bitmap.createBitmap(px, px, Bitmap.Config.ARGB_8888);
+        Canvas cv = new Canvas(bmp);
+        Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
+        p.setColor(color);
+        float u = px / 5f;
+        int[][] finders = {{0, 0}, {3, 0}, {0, 3}};
+        for (int[] f : finders) {
+            float x = f[0] * u, y = f[1] * u;
+            cv.drawRect(x, y, x + 2 * u, y + 2 * u, p);
+        }
+        Paint clear = new Paint(Paint.ANTI_ALIAS_FLAG);
+        clear.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
+        for (int[] f : finders) {
+            float x = f[0] * u, y = f[1] * u;
+            cv.drawRect(x + 0.75f * u, y + 0.75f * u, x + 1.25f * u, y + 1.25f * u, clear);
+        }
+        cv.drawRect(2 * u, 2 * u, 2.7f * u, 2.7f * u, p);
+        cv.drawRect(3.3f * u, 2 * u, 4 * u, 2.7f * u, p);
+        cv.drawRect(2 * u, 3.3f * u, 2.7f * u, 4 * u, p);
+        cv.drawRect(3.4f * u, 3.4f * u, 4.1f * u, 4.1f * u, p);
+        cv.drawRect(4.2f * u, 4.2f * u, 5 * u, 5 * u, p);
+        return new BitmapDrawable(c.getResources(), bmp);
+    }
+
+    /** Piece-art banner behind the profile header (same idea as the real profile). */
+    private static class ProfileBanner extends View {
+        private final Bitmap[] big;
+        private final Bitmap pawn;
+        private final Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final Paint scrim = new Paint(Paint.ANTI_ALIAS_FLAG);
+
+        ProfileBanner(Context c) {
+            super(c);
+            android.content.res.Resources r = c.getResources();
+            big = new Bitmap[]{
+                    BitmapFactory.decodeResource(r, R.drawable.piece_bq),
+                    BitmapFactory.decodeResource(r, R.drawable.piece_bk),
+                    BitmapFactory.decodeResource(r, R.drawable.piece_bb),
+                    BitmapFactory.decodeResource(r, R.drawable.piece_bn)
+            };
+            pawn = BitmapFactory.decodeResource(r, R.drawable.piece_bp);
+            p.setColorFilter(new PorterDuffColorFilter(0xFF2E3229, PorterDuff.Mode.SRC_IN));
+        }
+
+        @Override protected void onDraw(Canvas cv) {
+            float w = getWidth(), h = getHeight();
+            cv.drawColor(0xFF3D4136);
+            float bh = h * 0.66f;
+            p.setAlpha(165);
+            draw(cv, big[0], -w * 0.05f, h * 0.16f, bh);
+            draw(cv, big[1], w * 0.21f, h * 0.14f, bh);
+            draw(cv, big[2], w * 0.48f, h * 0.18f, bh * 0.94f);
+            draw(cv, big[3], w * 0.74f, h * 0.17f, bh * 0.98f);
+            float ph = h * 0.55f;
+            p.setAlpha(130);
+            for (int i = 0; i < 5; i++) {
+                draw(cv, pawn, w * (-0.03f + 0.215f * i), h * 0.55f, ph);
+            }
+            scrim.setShader(new LinearGradient(0, 0, 0, h,
+                    new int[]{0xB3000000, 0x331B1A18, 0xFF262421},
+                    new float[]{0f, 0.5f, 1f}, Shader.TileMode.CLAMP));
+            cv.drawRect(0, 0, w, h, scrim);
+        }
+
+        private void draw(Canvas cv, Bitmap b, float x, float y, float hgt) {
+            float ratio = b.getWidth() / (float) b.getHeight();
+            cv.drawBitmap(b, null, new RectF(x, y, x + hgt * ratio, y + hgt), p);
+        }
     }
 
     private static void statsRow(Context c, LinearLayout parent, String label, String value) {
@@ -694,7 +1214,7 @@ public class MoreDetailScreen {
         pg.root.addView(section(c, "About"));
         LinearLayout about = card(c);
         statsRow(c, about, "App", "Chess");
-        statsRow(c, about, "Version", "1.5.1");
+        statsRow(c, about, "Version", "1.5.2");
         statsRow(c, about, "Engine", "chesslib");
         pg.root.addView(about);
         return pg.scroll;

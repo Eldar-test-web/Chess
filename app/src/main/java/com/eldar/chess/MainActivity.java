@@ -20,8 +20,8 @@ public class MainActivity extends AppCompatActivity {
 
     public AppState state = new AppState();
 
-    /** Global text scale: everything is ~1.6x bigger than the stock sizes. */
-    public static final float TEXT_SCALE = 1.6f;
+    /** Global text scale: everything is ~1.4x bigger than the stock sizes. */
+    public static final float TEXT_SCALE = 1.4f;
 
     @Override
     protected void attachBaseContext(Context newBase) {
