@@ -16,27 +16,33 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
 
-/** Learn screen lesson path with large touch-friendly level diamonds. */
+/** Learn screen lesson path with 16 large touch-friendly level diamonds. */
 public class LearnPathView extends View {
+
+    public interface Listener {
+        void onLessonTap(int index);
+        void onNextTap();
+    }
 
     // column centres widened so the bigger diamonds keep their spacing
     private static final float COL_A = 110f, COL_B = 180f, COL_C = 250f;
     private static final float PITCH = 52.6f;
-    private static final float SIDE = 64f;          // lesson diamond side (was 53.3)
+    private static final float SIDE = 64f;
     private static final float RADIUS = 9f;
     private static final float LATTICE_SIDE = 53.3f;
     private static final float LATTICE_RADIUS = 8f;
-    public static final float CONTENT_H = 900f;     // scrollable path height
+    public static final float CONTENT_H = 1090f;      // scrollable path height
     private static final float LESSON_TOP = 130f, LESSON_PITCH = 55f;
-    private static final float MINT_Y = 797f;
+    private static final float MINT_Y = 1010f;
 
     private static final float[] COLS = {COL_B, COL_A, COL_B, COL_C, COL_B, COL_A,
-            COL_B, COL_C, COL_B, COL_A, COL_B, COL_C};
-    private static final int[] GLYPH = {0, 1, 2, 3, 4, 5, 6, 7, 8, 0, 7, 8};
+            COL_B, COL_C, COL_B, COL_A, COL_B, COL_C, COL_B, COL_A, COL_B, COL_C};
+    private static final int[] GLYPH = {0, 1, 2, 3, 4, 5, 6, 7, 8, 0, 7, 8, 7, 5, 7, 7};
 
     public static final String[] LESSON_NAMES = {"Move the King", "The Knight", "The Rook",
             "The Bishop", "The Queen", "The Pawn", "Capturing", "Check", "Checkmate",
-            "Castling", "En Passant", "Promotion"};
+            "Castling", "En Passant", "Promotion", "The Pin", "The Fork",
+            "Back Rank Mate", "Ladder Mate"};
 
     private static final int LATTICE = 0xFF1B1917;
     private static final int TEAL_TOP = 0xFF265050;
@@ -48,6 +54,7 @@ public class LearnPathView extends View {
     private final Paint solid = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint imgPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
     private final Paint text = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final RectF rect = new RectF();
 
     private Bitmap wPawn, wQueen, wRook, wBishop, wKnight;
     private Bitmap gKing, gPawn, gKnight, gBishop, gQueen, gRook;
@@ -55,10 +62,11 @@ public class LearnPathView extends View {
     private float touchX, touchY;
     private float scrollY, lastY;
     private boolean dragging;
+    private int progress = 0;
+    private Listener listener;
 
     public LearnPathView(Context c) {
         super(c);
-        setLayerType(LAYER_TYPE_SOFTWARE, null);
         wPawn = BitmapFactory.decodeResource(getResources(), R.drawable.piece3d_pawn_a);
         wQueen = BitmapFactory.decodeResource(getResources(), R.drawable.piece3d_queen_a);
         wRook = BitmapFactory.decodeResource(getResources(), R.drawable.piece3d_rook_a);
@@ -71,6 +79,10 @@ public class LearnPathView extends View {
         gQueen = BitmapFactory.decodeResource(getResources(), R.drawable.piece_neo_wq);
         gRook = BitmapFactory.decodeResource(getResources(), R.drawable.piece_neo_wr);
     }
+
+    public void setListener(Listener l) { listener = l; }
+
+    public void setProgress(int p) { progress = p; invalidate(); }
 
     private float dp(float v) { return v * getResources().getDisplayMetrics().density; }
 
@@ -91,15 +103,11 @@ public class LearnPathView extends View {
         cv.save();
         cv.translate(0, -scrollY);
 
-        // page backdrop
-        solid.setShader(null);
-        solid.setStyle(Paint.Style.FILL);
         solid.setColor(0xFF262421);
         cv.drawRect(0, 0, w, h, solid);
 
         // dark checkerboard lattice
         solid.setColor(LATTICE);
-        solid.setShadowLayer(dp(4), 0, dp(1.5f), 0x38000000);
         int cols = (int) Math.ceil(w / dp(PITCH)) + 4;
         float colPitch = dp(PITCH), side = dp(LATTICE_SIDE), rad = dp(LATTICE_RADIUS);
         for (int i = -3; i < cols; i++) {
@@ -109,18 +117,17 @@ public class LearnPathView extends View {
             for (float cy = -side + rowOff; cy < h + side; cy += dp(80.4f)) {
                 cv.save();
                 cv.rotate(45f, cx, cy);
-                cv.drawRoundRect(new RectF(cx - side / 2, cy - side / 2,
-                        cx + side / 2, cy + side / 2), rad, rad, solid);
+                rect.set(cx - side / 2, cy - side / 2, cx + side / 2, cy + side / 2);
+                cv.drawRoundRect(rect, rad, rad, solid);
                 cv.restore();
             }
         }
-        solid.setShadowLayer(0, 0, 0, 0);
 
-        // teal lesson diamonds
+        // teal lesson diamonds (completed ones glow brighter)
         for (int i = 0; i < COLS.length; i++) {
             float cx = dp(COLS[i]);
             float cy = dp(LESSON_TOP + i * LESSON_PITCH);
-            drawTeal(cv, cx, cy, i == 1);
+            drawTeal(cv, cx, cy, i < progress);
             drawGlyph(cv, cx, cy, GLYPH[i]);
         }
 
@@ -133,6 +140,8 @@ public class LearnPathView extends View {
         piece(cv, wRook, dp(COL_C), dp(380f), 61f);
         piece(cv, wBishop, dp(COL_A), dp(490f), 67f);
         piece(cv, wKnight, dp(COL_C), dp(600f), 54f);
+        piece(cv, wPawn, dp(COL_A), dp(710f), 52f);
+        piece(cv, wQueen, dp(COL_C), dp(820f), 73f);
 
         cv.restore();
     }
@@ -167,16 +176,24 @@ public class LearnPathView extends View {
                         float dx = Math.abs(e.getX() - dp(COLS[i]));
                         float dy = Math.abs(ty - dp(LESSON_TOP + i * LESSON_PITCH));
                         if (dx + dy <= hitRadius()) {
-                            Toast.makeText(getContext(), "Lesson " + (i + 1) + ": "
-                                    + LESSON_NAMES[i], Toast.LENGTH_SHORT).show();
+                            if (listener != null) {
+                                listener.onLessonTap(i);
+                            } else {
+                                Toast.makeText(getContext(), "Lesson " + (i + 1) + ": "
+                                        + LESSON_NAMES[i], Toast.LENGTH_SHORT).show();
+                            }
                             return true;
                         }
                     }
                     float dx = Math.abs(e.getX() - dp(COL_A));
                     float dy = Math.abs(ty - dp(MINT_Y));
                     if (dx + dy <= hitRadius() + dp(2)) {
-                        Toast.makeText(getContext(), "Ready for the next lesson!",
-                                Toast.LENGTH_SHORT).show();
+                        if (listener != null) {
+                            listener.onNextTap();
+                        } else {
+                            Toast.makeText(getContext(), "Ready for the next lesson!",
+                                    Toast.LENGTH_SHORT).show();
+                        }
                     }
                 }
                 return true;
@@ -190,24 +207,22 @@ public class LearnPathView extends View {
         return true;
     }
 
-    private void drawTeal(Canvas cv, float cx, float cy, boolean bright) {
+    private void drawTeal(Canvas cv, float cx, float cy, boolean completed) {
         float s = dp(SIDE) / 2;
         solid.setShader(new LinearGradient(cx - s, cy - s, cx + s, cy + s,
-                bright ? 0xFF356262 : TEAL_TOP, bright ? 0xFF204C4C : TEAL_BOT, Shader.TileMode.CLAMP));
-        solid.setShadowLayer(dp(8), 0, dp(3), 0x59000000);
+                completed ? 0xFF356262 : TEAL_TOP, completed ? 0xFF204C4C : TEAL_BOT,
+                Shader.TileMode.CLAMP));
         cv.save();
         cv.rotate(45f, cx, cy);
-        cv.drawRoundRect(new RectF(cx - s, cy - s, cx + s, cy + s),
-                dp(RADIUS), dp(RADIUS), solid);
+        rect.set(cx - s, cy - s, cx + s, cy + s);
+        cv.drawRoundRect(rect, dp(RADIUS), dp(RADIUS), solid);
         cv.restore();
-        solid.setShadowLayer(0, 0, 0, 0);
         solid.setShader(null);
     }
 
     private void drawGlyph(Canvas cv, float cx, float cy, int id) {
         imgPaint.setColorFilter(new PorterDuffColorFilter(GLYPH_TINT, PorterDuff.Mode.SRC_IN));
         imgPaint.setAlpha(150);
-        imgPaint.setShadowLayer(0, 0, 0, 0);
         solid.setColor(GLYPH_TINT);
         solid.setAlpha(150);
         solid.setStyle(Paint.Style.FILL);
@@ -215,10 +230,10 @@ public class LearnPathView extends View {
             case 0: glyphBitmap(cv, gKing, cx, cy, 38); break;
             case 1: { // thick plus
                 float a = dp(8), l = dp(35);
-                RectF v = new RectF(cx - a / 2, cy - l / 2, cx + a / 2, cy + l / 2);
-                RectF hbar = new RectF(cx - l / 2, cy - a / 2, cx + l / 2, cy + a / 2);
-                cv.drawRoundRect(v, a / 2, a / 2, solid);
-                cv.drawRoundRect(hbar, a / 2, a / 2, solid);
+                rect.set(cx - a / 2, cy - l / 2, cx + a / 2, cy + l / 2);
+                cv.drawRoundRect(rect, a / 2, a / 2, solid);
+                rect.set(cx - l / 2, cy - a / 2, cx + l / 2, cy + a / 2);
+                cv.drawRoundRect(rect, a / 2, a / 2, solid);
                 break;
             }
             case 2: drawAxe(cv, cx, cy); break;
@@ -249,8 +264,8 @@ public class LearnPathView extends View {
     private void glyphBitmap(Canvas cv, Bitmap b, float cx, float cy, float hDp) {
         if (b == null) return;
         float ph = dp(hDp), pw = ph * b.getWidth() / b.getHeight();
-        cv.drawBitmap(b, null, new RectF(cx - pw / 2, cy - ph / 2, cx + pw / 2, cy + ph / 2),
-                imgPaint);
+        rect.set(cx - pw / 2, cy - ph / 2, cx + pw / 2, cy + ph / 2);
+        cv.drawBitmap(b, null, rect, imgPaint);
     }
 
     private void drawAxe(Canvas cv, float cx, float cy) {
@@ -299,9 +314,8 @@ public class LearnPathView extends View {
         float kw = dp(33), kh = dp(33);
         float l = cx - kw / 2, r = cx + kw / 2;
         float t = cy - kh / 2 - dp(1), b = cy + kh / 2;
-        // base bar
-        cv.drawRoundRect(new RectF(l + dp(3), b - dp(5), r - dp(3), b),
-                dp(1.8f), dp(1.8f), solid);
+        rect.set(l + dp(3), b - dp(5), r - dp(3), b);
+        cv.drawRoundRect(rect, dp(1.8f), dp(1.8f), solid);
         // crown body: two rounded shoulders with curled tips
         Path king = new Path();
         king.moveTo(l + dp(6), b - dp(7));
@@ -316,17 +330,15 @@ public class LearnPathView extends View {
         king.close();
         cv.drawPath(king, solid);
         // cross
-        cv.drawRoundRect(new RectF(cx - dp(1.7f), t - dp(6), cx + dp(1.7f), t + dp(7)),
-                dp(0.8f), dp(0.8f), solid);
-        cv.drawRoundRect(new RectF(cx - dp(6), t - dp(1.7f), cx + dp(6), t + dp(1.7f)),
-                dp(0.8f), dp(0.8f), solid);
+        rect.set(cx - dp(1.7f), t - dp(6), cx + dp(1.7f), t + dp(7));
+        cv.drawRoundRect(rect, dp(0.8f), dp(0.8f), solid);
+        rect.set(cx - dp(6), t - dp(1.7f), cx + dp(6), t + dp(1.7f));
+        cv.drawRoundRect(rect, dp(0.8f), dp(0.8f), solid);
         // Next pill
         float pw = dp(70), ph = dp(29), py = cy - dp(72);
-        solid.setShadowLayer(dp(8), 0, dp(2.5f), 0x66000000);
         solid.setColor(0xFFF8F8F8);
-        cv.drawRoundRect(new RectF(cx - pw / 2, py - ph / 2, cx + pw / 2, py + ph / 2),
-                dp(7), dp(7), solid);
-        solid.setShadowLayer(0, 0, 0, 0);
+        rect.set(cx - pw / 2, py - ph / 2, cx + pw / 2, py + ph / 2);
+        cv.drawRoundRect(rect, dp(7), dp(7), solid);
         // tail
         cv.save();
         cv.rotate(45f, cx, py + ph / 2 + dp(2));
@@ -344,7 +356,8 @@ public class LearnPathView extends View {
     private void drawRotRect(Canvas cv, float cx, float cy, float s, float rad) {
         cv.save();
         cv.rotate(45f, cx, cy);
-        cv.drawRoundRect(new RectF(cx - s, cy - s, cx + s, cy + s), rad, rad, solid);
+        rect.set(cx - s, cy - s, cx + s, cy + s);
+        cv.drawRoundRect(rect, rad, rad, solid);
         cv.restore();
     }
 
@@ -353,9 +366,7 @@ public class LearnPathView extends View {
         float ph = dp(hDp), pw = ph * b.getWidth() / b.getHeight();
         imgPaint.setColorFilter(null);
         imgPaint.setAlpha(255);
-        imgPaint.setShadowLayer(dp(9), 0, dp(4), 0x73000000);
-        cv.drawBitmap(b, null, new RectF(cx - pw / 2, cy - ph / 2, cx + pw / 2, cy + ph / 2),
-                imgPaint);
-        imgPaint.setShadowLayer(0, 0, 0, 0);
+        rect.set(cx - pw / 2, cy - ph / 2, cx + pw / 2, cy + ph / 2);
+        cv.drawBitmap(b, null, rect, imgPaint);
     }
 }

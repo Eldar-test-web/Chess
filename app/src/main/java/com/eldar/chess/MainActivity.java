@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
 
         bottomNav = buildBottomNav();
         root.addView(bottomNav, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(this, 46)));
+                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(this, 62)));
 
         setContentView(root);
         showSplash();
@@ -98,6 +98,7 @@ public class MainActivity extends AppCompatActivity {
             case "newgame": v = NewGameScreen.build(this); break;
             case "game": v = GameScreen.build(this); break;
             case "learn": v = LearnScreen.build(this); break;
+            case "lesson": v = LessonScreen.build(this); break;
             case "watch": v = WatchScreen.build(this); break;
             case "more": v = MoreScreen.build(this); break;
             case "premium": v = PremiumScreen.build(this); break;
@@ -143,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
 
     private LinearLayout navItem(final String label, int iconRes) {
         final LinearLayout item = new LinearLayout(this);
-        item.setOrientation(LinearLayout.HORIZONTAL);
+        item.setOrientation(LinearLayout.VERTICAL);
         item.setGravity(Gravity.CENTER);
         item.setClipChildren(false);
         item.setClipToPadding(false);
@@ -152,39 +153,39 @@ public class MainActivity extends AppCompatActivity {
         ImageView icon = new ImageView(this);
         icon.setImageResource(iconRes);
         icon.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        icon.setColorFilter(0xFF8A8780);
+        icon.setColorFilter(0xFFA19D96);
 
         FrameLayout iconWrap = new FrameLayout(this);
         iconWrap.setClipChildren(false);
         iconWrap.setLayoutParams(new LinearLayout.LayoutParams(
-                Ui.dp(this, 16), Ui.dp(this, 16)));
+                Ui.dp(this, 25), Ui.dp(this, 25)));
         iconWrap.addView(icon, new FrameLayout.LayoutParams(
-                Ui.dp(this, 16), Ui.dp(this, 16), Gravity.CENTER));
+                Ui.dp(this, 25), Ui.dp(this, 25), Gravity.CENTER));
         if ("More".equals(label)) {
             moreBadge = new TextView(this);
             moreBadge.setText("1");
-            moreBadge.setTextSize(7);
+            moreBadge.setTextSize(8);
             moreBadge.setTextColor(0xFFFFFFFF);
             moreBadge.setTypeface(null, Typeface.BOLD);
             moreBadge.setGravity(Gravity.CENTER);
             moreBadge.setIncludeFontPadding(false);
             moreBadge.setBackground(Ui.round(0xFFFA412D, 5, this));
             FrameLayout.LayoutParams bp = new FrameLayout.LayoutParams(
-                    Ui.dp(this, 10), Ui.dp(this, 10));
+                    Ui.dp(this, 13), Ui.dp(this, 13));
             bp.gravity = Gravity.TOP | Gravity.END;
-            bp.topMargin = -Ui.dp(this, 5);
-            bp.rightMargin = -Ui.dp(this, 5);
+            bp.topMargin = -Ui.dp(this, 6);
+            bp.rightMargin = -Ui.dp(this, 6);
             moreBadge.setLayoutParams(bp);
             moreBadge.setVisibility(state.hasPlayed() ? View.VISIBLE : View.GONE);
             iconWrap.addView(moreBadge);
         }
         item.addView(iconWrap);
 
-        TextView tv = Ui.text(this, label, 8.5f, 0xFF8A8780, false);
+        TextView tv = Ui.text(this, label, 10.5f, 0xFFA19D96, false);
         tv.setGravity(Gravity.CENTER);
         LinearLayout.LayoutParams tp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        tp.setMargins(Ui.dp(this, 4), 0, 0, 0);
+        tp.setMargins(0, Ui.dp(this, 3), 0, 0);
         tv.setLayoutParams(tp);
         item.addView(tv);
 
@@ -206,7 +207,7 @@ public class MainActivity extends AppCompatActivity {
             tv.setTextColor(Ui.WHITE);
             tv.setTypeface(null, Typeface.BOLD);
         } else {
-            icon.setColorFilter(0xFF8A8780);
+            icon.setColorFilter(0xFFA19D96);
             tv.setTextColor(0xFF8A8780);
             tv.setTypeface(null, Typeface.NORMAL);
         }
@@ -217,6 +218,7 @@ public class MainActivity extends AppCompatActivity {
             case "home": finish(); break;
             case "newgame": case "premium": case "friends": navigate("home"); break;
             case "learn": case "watch": case "puzzles": navigate("home"); break;
+            case "lesson": navigate("learn"); break;
             case "game": if (activeGame != null) activeGame.onBackPressed(); break;
             case "more": navigate("home"); break;
             default: navigate("home");

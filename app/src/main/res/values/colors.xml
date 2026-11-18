@@ -20,4 +20,5 @@
     <color name="selected">#BACBA3</color>
     <color name="chip">#403D39</color>
     <color name="chipLight">#56534E</color>
+    <color name="ic_launcher_bg">#302D2B</color>
 </resources>

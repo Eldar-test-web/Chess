@@ -4,6 +4,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -32,7 +33,7 @@ public class HomeScreen {
         scroll.setBackgroundColor(0x00000000);
 
         LinearLayout body = Ui.linear(c, LinearLayout.VERTICAL);
-        body.setPadding(0, Ui.dp(c, 14), 0, Ui.dp(c, 60));
+        body.setPadding(0, Ui.dp(c, 12), 0, Ui.dp(c, 78));
         scroll.addView(body, new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
@@ -45,17 +46,17 @@ public class HomeScreen {
         View scrim = new View(c);
         scrim.setBackgroundColor(0xFF262421);
         FrameLayout.LayoutParams scp = new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 46));
+                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 64));
         scp.gravity = Gravity.BOTTOM;
         stage.addView(scrim, scp);
 
-        TextView play = Ui.text(c, "Play", 13, Ui.WHITE, true);
+        TextView play = Ui.text(c, "Play", 21, Ui.WHITE, true);
         play.setGravity(Gravity.CENTER);
-        play.setBackground(Ui.greenFill(c, 5.5f));
+        play.setBackground(Ui.greenFill(c, 8));
         FrameLayout.LayoutParams pp = new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 34));
+                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 52));
         pp.gravity = Gravity.BOTTOM;
-        pp.setMargins(Ui.dp(c, 6), 0, Ui.dp(c, 9), Ui.dp(c, 8));
+        pp.setMargins(Ui.dp(c, 8), 0, Ui.dp(c, 12), Ui.dp(c, 10));
         play.setLayoutParams(pp);
         play.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) { main.navigate("newgame"); }
@@ -73,7 +74,7 @@ public class HomeScreen {
         // ---- Puzzles artwork hero + Daily Puzzle ----
         LinearLayout row = Ui.linear(c, LinearLayout.HORIZONTAL);
         LinearLayout.LayoutParams rp = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 118));
+                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 138));
         rp.setMargins(Ui.dp(c, 6), 0, 0, 0);
         row.setLayoutParams(rp);
 
@@ -96,7 +97,7 @@ public class HomeScreen {
         LinearLayout daily = Ui.linear(c, LinearLayout.VERTICAL);
         daily.setGravity(Gravity.CENTER_HORIZONTAL);
         daily.setBackground(Ui.cardBg(c, 6));
-        daily.setPadding(0, Ui.dp(c, 33), 0, 0);
+        daily.setPadding(0, Ui.dp(c, 36), 0, 0);
         LinearLayout.LayoutParams dlp = new LinearLayout.LayoutParams(0,
                 ViewGroup.LayoutParams.MATCH_PARENT, 1f);
         dlp.setMargins(0, 0, -Ui.dp(c, 22), 0);
@@ -105,13 +106,13 @@ public class HomeScreen {
         ImageView dIcon = new ImageView(c);
         dIcon.setImageResource(R.drawable.daily_icon);
         dIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        daily.addView(dIcon, new LinearLayout.LayoutParams(Ui.dp(c, 31), Ui.dp(c, 28)));
+        daily.addView(dIcon, new LinearLayout.LayoutParams(Ui.dp(c, 38), Ui.dp(c, 34)));
 
-        TextView dTitle = Ui.text(c, "Daily Puzzle", 8.5f, Ui.WHITE, true);
+        TextView dTitle = Ui.text(c, "Daily Puzzle", 11, Ui.WHITE, true);
         dTitle.setGravity(Gravity.CENTER);
         dTitle.setPadding(0, Ui.dp(c, 5), 0, 0);
         daily.addView(dTitle);
-        TextView dSub = Ui.text(c, "Solved by 118,355", 7.5f, 0xFFA5A19B, false);
+        TextView dSub = Ui.text(c, "Solved by 118,355", 9.5f, 0xFFA5A19B, false);
         dSub.setGravity(Gravity.CENTER);
         dSub.setPadding(0, Ui.dp(c, 4), 0, 0);
         daily.addView(dSub);
@@ -291,10 +292,10 @@ public class HomeScreen {
     private static LinearLayout topBar(final android.content.Context c, final MainActivity main) {
         LinearLayout top = Ui.linear(c, LinearLayout.HORIZONTAL);
         top.setGravity(Gravity.CENTER_VERTICAL);
-        top.setPadding(Ui.dp(c, 6), Ui.dp(c, 4), Ui.dp(c, 9), Ui.dp(c, 4));
+        top.setPadding(Ui.dp(c, 10), Ui.dp(c, 6), Ui.dp(c, 12), Ui.dp(c, 6));
 
         FrameLayout avatar = new FrameLayout(c);
-        avatar.setBackground(Ui.round(0xFFE7E5E3, 3, c));
+        avatar.setBackground(Ui.round(0xFFE7E5E3, 5, c));
         avatar.setClipToOutline(true);
         ImageView pawn = new ImageView(c);
         pawn.setImageResource(R.drawable.piece_wp);
@@ -304,7 +305,7 @@ public class HomeScreen {
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         pp.setMargins(Ui.dp(c, 2), Ui.dp(c, 2), Ui.dp(c, 2), Ui.dp(c, 2));
         avatar.addView(pawn, pp);
-        avatar.setLayoutParams(new LinearLayout.LayoutParams(Ui.dp(c, 21), Ui.dp(c, 21)));
+        avatar.setLayoutParams(new LinearLayout.LayoutParams(Ui.dp(c, 28), Ui.dp(c, 28)));
         avatar.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) { main.navigate("more"); }
         });
@@ -314,12 +315,12 @@ public class HomeScreen {
         flame.setImageResource(R.drawable.icon_flame);
         flame.setScaleType(ImageView.ScaleType.FIT_CENTER);
         LinearLayout.LayoutParams fp = new LinearLayout.LayoutParams(
-                Ui.dp(c, 17), Ui.dp(c, 19));
+                Ui.dp(c, 22), Ui.dp(c, 24));
         fp.setMargins(0, 0, 0, 0);
         flame.setLayoutParams(fp);
-        flame.setTranslationY(Ui.dp(c, 1.5f));
+        flame.setTranslationY(Ui.dp(c, 2f));
         top.addView(flame);
-        TextView streak = Ui.text(c, String.valueOf(main.state.streak), 10.5f, Ui.WHITE, true);
+        TextView streak = Ui.text(c, String.valueOf(main.state.streak), 13, Ui.WHITE, true);
         LinearLayout.LayoutParams sp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         sp.setMargins(Ui.dp(c, 2), 0, 0, 0);
@@ -329,8 +330,8 @@ public class HomeScreen {
         top.addView(Ui.spacerWeight(c, 1f));
 
         int[] artIds = {R.drawable.icon_diamond, R.drawable.icon_people, R.drawable.icon_bell};
-        int[] ws = {20, 19, 16};
-        int[] hs = {18, 17, 16};
+        int[] ws = {26, 25, 21};
+        int[] hs = {24, 22, 21};
         View.OnClickListener[] clicks = {
                 new View.OnClickListener() {
                     @Override public void onClick(View v) { main.navigate("premium"); }
@@ -350,7 +351,7 @@ public class HomeScreen {
             iv.setScaleType(ImageView.ScaleType.FIT_CENTER);
             LinearLayout.LayoutParams ip = new LinearLayout.LayoutParams(
                     Ui.dp(c, ws[i]), Ui.dp(c, hs[i]));
-            ip.setMargins(Ui.dp(c, 8), 0, 0, 0);
+            ip.setMargins(Ui.dp(c, 14), 0, 0, 0);
             iv.setLayoutParams(ip);
             iv.setOnClickListener(clicks[i]);
             top.addView(iv);
@@ -365,15 +366,15 @@ public class HomeScreen {
         LinearLayout card = Ui.linear(c, LinearLayout.VERTICAL);
         card.setGravity(Gravity.CENTER);
         card.setBackground(Ui.cardBg(c, 6));
-        card.setLayoutParams(new LinearLayout.LayoutParams(0, Ui.dp(c, 116), weight));
+        card.setLayoutParams(new LinearLayout.LayoutParams(0, Ui.dp(c, 136), weight));
         ImageView icon = new ImageView(c);
         icon.setImageResource(R.drawable.daily_icon);
         icon.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        card.addView(icon, new LinearLayout.LayoutParams(Ui.dp(c, 34), Ui.dp(c, 32)));
-        TextView t = Ui.text(c, "Daily Puzzle", 8.5f, Ui.WHITE, true);
+        card.addView(icon, new LinearLayout.LayoutParams(Ui.dp(c, 40), Ui.dp(c, 38)));
+        TextView t = Ui.text(c, "Daily Puzzle", 11, Ui.WHITE, true);
         t.setPadding(0, Ui.dp(c, 6), 0, 0);
         card.addView(t);
-        card.addView(Ui.text(c, "Solved by 118,355", 7.5f, Ui.GREY, false));
+        card.addView(Ui.text(c, "Solved by 118,355", 9.5f, Ui.GREY, false));
         card.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) { main.navigate("puzzles"); }
         });
@@ -385,15 +386,15 @@ public class HomeScreen {
         LinearLayout card = Ui.linear(c, LinearLayout.VERTICAL);
         card.setGravity(Gravity.CENTER);
         card.setBackground(Ui.cardBg(c, 6));
-        card.setLayoutParams(new LinearLayout.LayoutParams(0, Ui.dp(c, 116), 1f));
+        card.setLayoutParams(new LinearLayout.LayoutParams(0, Ui.dp(c, 136), 1f));
         ImageView art = new ImageView(c);
         art.setImageResource(artRes);
         art.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        card.addView(art, new LinearLayout.LayoutParams(Ui.dp(c, 58), Ui.dp(c, 50)));
-        TextView t = Ui.text(c, title, 8.5f, Ui.WHITE, true);
+        card.addView(art, new LinearLayout.LayoutParams(Ui.dp(c, 66), Ui.dp(c, 58)));
+        TextView t = Ui.text(c, title, 11, Ui.WHITE, true);
         t.setPadding(0, Ui.dp(c, 5), 0, 0);
         card.addView(t);
-        card.addView(Ui.text(c, sub, 7.5f, Ui.GREY, false));
+        card.addView(Ui.text(c, sub, 9.5f, Ui.GREY, false));
         card.setOnClickListener(click);
         return card;
     }
@@ -405,14 +406,14 @@ public class HomeScreen {
         card.setBackground(Ui.cardBg(c, 6));
         card.setClipToOutline(true);
         LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 50));
+                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 68));
         p.setMargins(Ui.dp(c, 6), Ui.dp(c, 6), Ui.dp(c, 9), 0);
         card.setLayoutParams(p);
 
         ImageView av = new ImageView(c);
         av.setImageResource(R.drawable.avatar_rec);
         av.setScaleType(ImageView.ScaleType.FIT_XY);
-        card.addView(av, new LinearLayout.LayoutParams(Ui.dp(c, 50), Ui.dp(c, 50)));
+        card.addView(av, new LinearLayout.LayoutParams(Ui.dp(c, 68), Ui.dp(c, 68)));
 
         LinearLayout info = Ui.linear(c, LinearLayout.VERTICAL);
         info.setGravity(Gravity.CENTER_VERTICAL);
@@ -423,12 +424,12 @@ public class HomeScreen {
 
         LinearLayout nameRow = Ui.linear(c, LinearLayout.HORIZONTAL);
         nameRow.setGravity(Gravity.CENTER_VERTICAL);
-        nameRow.addView(Ui.text(c, "GustyBattery", 8.5f, Ui.WHITE, true));
+        nameRow.addView(Ui.text(c, "GustyBattery", 11.5f, Ui.WHITE, true));
         ImageView flag = new ImageView(c);
         flag.setImageDrawable(Ui.flagAf(c));
         flag.setScaleType(ImageView.ScaleType.FIT_CENTER);
         LinearLayout.LayoutParams flp = new LinearLayout.LayoutParams(
-                Ui.dp(c, 10), Ui.dp(c, 8));
+                Ui.dp(c, 13), Ui.dp(c, 10));
         flp.setMargins(Ui.dp(c, 3), 0, 0, 0);
         flag.setLayoutParams(flp);
         nameRow.addView(flag);
@@ -436,10 +437,10 @@ public class HomeScreen {
 
         LinearLayout daysRow = Ui.linear(c, LinearLayout.HORIZONTAL);
         daysRow.setGravity(Gravity.CENTER_VERTICAL);
-        TextView clock = Ui.glyph(c, "settings", 8, 0xFFA5A19B);
-        clock.setLayoutParams(new LinearLayout.LayoutParams(Ui.dp(c, 10), Ui.dp(c, 10)));
+        TextView clock = Ui.glyph(c, "settings", 10, 0xFFA5A19B);
+        clock.setLayoutParams(new LinearLayout.LayoutParams(Ui.dp(c, 12), Ui.dp(c, 12)));
         daysRow.addView(clock);
-        TextView days = Ui.text(c, "3 days", 7, 0xFFA5A19B, false);
+        TextView days = Ui.text(c, "3 days", 9, 0xFFA5A19B, false);
         LinearLayout.LayoutParams dlp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         dlp.setMargins(Ui.dp(c, 2), 0, 0, 0);
@@ -451,7 +452,7 @@ public class HomeScreen {
         daysRow.setLayoutParams(drp);
         info.addView(daysRow);
 
-        TextView skill = Ui.text(c, "SIMILAR SKILL", 7.5f, 0xFF7AAC4A, true);
+        TextView skill = Ui.text(c, "SIMILAR SKILL", 8.8f, 0xFF7AAC4A, true);
         skill.setLetterSpacing(0.07f);
         skill.setGravity(Gravity.CENTER);
         skill.setBackground(Ui.round(0xFF333E2E, 2, c));
@@ -469,8 +470,8 @@ public class HomeScreen {
         go.setBackground(Ui.greenFill(c, 4));
         go.setPadding(Ui.dp(c, 6), Ui.dp(c, 6), Ui.dp(c, 6), Ui.dp(c, 6));
         LinearLayout.LayoutParams gop = new LinearLayout.LayoutParams(
-                Ui.dp(c, 30), Ui.dp(c, 30));
-        gop.setMargins(0, 0, Ui.dp(c, 7), 0);
+                Ui.dp(c, 40), Ui.dp(c, 40));
+        gop.setMargins(0, 0, Ui.dp(c, 10), 0);
         go.setLayoutParams(gop);
         go.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) { startGusty(main); }
@@ -496,9 +497,9 @@ public class HomeScreen {
         h.setGravity(Gravity.CENTER_VERTICAL);
         LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        p.setMargins(Ui.dp(c, 6), Ui.dp(c, topDp), Ui.dp(c, 9), 0);
+        p.setMargins(Ui.dp(c, 12), Ui.dp(c, topDp), Ui.dp(c, 12), 0);
         h.setLayoutParams(p);
-        h.addView(Ui.text(c, title, 9.3f, Ui.WHITE, true));
+        h.addView(Ui.text(c, title, 13.5f, Ui.WHITE, true));
         h.addView(Ui.spacerWeight(c, 1f));
         return h;
     }
@@ -508,15 +509,15 @@ public class HomeScreen {
         LinearLayout card = Ui.linear(c, LinearLayout.VERTICAL);
         card.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL);
         card.setBackground(Ui.cardBg(c, 6));
-        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0, Ui.dp(c, 120), 1f);
+        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0, Ui.dp(c, 136), 1f);
         card.setLayoutParams(p);
         ImageView art = new ImageView(c);
         art.setImageResource(artRes);
         art.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        card.addView(art, new LinearLayout.LayoutParams(Ui.dp(c, 72), Ui.dp(c, 48)));
-        TextView t = Ui.text(c, label, 8.5f, Ui.WHITE, true);
+        card.addView(art, new LinearLayout.LayoutParams(Ui.dp(c, 80), Ui.dp(c, 56)));
+        TextView t = Ui.text(c, label, 11.5f, Ui.WHITE, true);
         t.setGravity(Gravity.CENTER);
-        t.setPadding(0, Ui.dp(c, 4), 0, 0);
+        t.setPadding(0, Ui.dp(c, 7), 0, 0);
         card.addView(t);
         card.setOnClickListener(click);
         return card;
@@ -528,7 +529,7 @@ public class HomeScreen {
         section.addView(sectionHeader(c, "Friends", topDp));
         LinearLayout fr = Ui.linear(c, LinearLayout.HORIZONTAL);
         LinearLayout.LayoutParams frp = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 120));
+                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 136));
         frp.setMargins(-Ui.dp(c, 9), Ui.dp(c, 6), -Ui.dp(c, 9), 0);
         fr.setLayoutParams(frp);
         fr.addView(iconCard(c, R.drawable.fri_find, "Find Friends",
@@ -563,7 +564,7 @@ public class HomeScreen {
         LinearLayout section = Ui.linear(c, LinearLayout.VERTICAL);
         LinearLayout head = sectionHeader(c, "Ratings", played ? 17.5f : 16);
         if (played) {
-            head.addView(Ui.text(c, "View All", 8, 0xFFE1DEDA, false));
+            head.addView(Ui.text(c, "View All", 11.5f, 0xFFE1DEDA, false));
         }
         section.addView(head);
         if (played) {
@@ -574,13 +575,21 @@ public class HomeScreen {
         return section;
     }
 
-    private static LinearLayout ratingsCards(final android.content.Context c,
-                                             final MainActivity main) {
+    private static View ratingsCards(final android.content.Context c,
+                                     final MainActivity main) {
+        HorizontalScrollView hsv = new HorizontalScrollView(c);
+        hsv.setHorizontalScrollBarEnabled(false);
+        hsv.setOverScrollMode(View.OVER_SCROLL_NEVER);
+        hsv.setClipToPadding(false);
+        LinearLayout.LayoutParams hp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 118));
+        hp.setMargins(0, Ui.dp(c, 8), 0, 0);
+        hsv.setLayoutParams(hp);
+
         LinearLayout row = Ui.linear(c, LinearLayout.HORIZONTAL);
-        LinearLayout.LayoutParams rp = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 88));
-        rp.setMargins(-Ui.dp(c, 25), Ui.dp(c, 6), Ui.dp(c, 9), 0);
-        row.setLayoutParams(rp);
+        row.setPadding(Ui.dp(c, 12), 0, Ui.dp(c, 12), 0);
+        hsv.addView(row, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
         int[] art = {R.drawable.rate_bullet, R.drawable.rate_blitz,
                 R.drawable.rate_daily, R.drawable.rate_allstats};
@@ -588,39 +597,30 @@ public class HomeScreen {
         String[] values = {String.valueOf(main.state.bulletRating),
                 String.valueOf(main.state.blitzRating),
                 String.valueOf(main.state.dailyRating), "-"};
-        float[] iconW = {33, 30, 25, 24};
-        float[] iconH = {34, 33, 25, 25.5f};
-        float[] iconTop = {14.9f, 15.1f, 17.8f, 18.2f};
-        float[] labelPad = {0.3f, 0, 4.3f, 3.2f};
-        float[] labelSize = {12, 12, 12, 8.5f};
-        float[] labelShift = {-2.75f, -1.37f, -0.69f, 2.75f};
         for (int i = 0; i < 4; i++) {
             if (i > 0) row.addView(gap(c, 8));
             LinearLayout tile = Ui.linear(c, LinearLayout.VERTICAL);
             tile.setGravity(Gravity.CENTER_HORIZONTAL);
-            tile.setBackground(Ui.cardBg(c, 6));
-            tile.setLayoutParams(new LinearLayout.LayoutParams(0,
-                    ViewGroup.LayoutParams.MATCH_PARENT, 1f));
+            tile.setBackground(Ui.cardBg(c, 7));
+            tile.setLayoutParams(new LinearLayout.LayoutParams(Ui.dp(c, 112), Ui.dp(c, 118)));
             ImageView icon = new ImageView(c);
             icon.setImageResource(art[i]);
             icon.setScaleType(ImageView.ScaleType.FIT_CENTER);
-            if (i == 0) icon.setTranslationX(Ui.dp(c, 4));
             LinearLayout.LayoutParams ip = new LinearLayout.LayoutParams(
-                    Ui.dp(c, iconW[i]), Ui.dp(c, iconH[i]));
-            ip.setMargins(0, Ui.dp(c, iconTop[i]), 0, 0);
+                    Ui.dp(c, 38), Ui.dp(c, 38));
+            ip.setMargins(0, Ui.dp(c, 14), 0, 0);
             tile.addView(icon, ip);
-            TextView l = Ui.text(c, labels[i], labelSize[i], Ui.WHITE, true);
+            TextView l = Ui.text(c, labels[i], 13, Ui.WHITE, true);
             l.setGravity(Gravity.CENTER);
-            l.setPadding(0, Ui.dp(c, labelPad[i]), 0, 0);
-            l.setTranslationY(Ui.dp(c, labelShift[i]));
+            l.setPadding(0, Ui.dp(c, 8), 0, 0);
             tile.addView(l);
-            TextView value = Ui.text(c, values[i], 7.5f, 0xFFB5B1AB, false);
+            TextView value = Ui.text(c, values[i], 12.5f, 0xFFB5B1AB, false);
             value.setGravity(Gravity.CENTER);
-            value.setTranslationY(-Ui.dp(c, 4.8f));
+            value.setPadding(0, Ui.dp(c, 6), 0, 0);
             tile.addView(value);
             row.addView(tile);
         }
-        return row;
+        return hsv;
     }
 
     /** Single ratings container used by the unplayed screens. */
@@ -648,18 +648,18 @@ public class HomeScreen {
             ImageView icon = new ImageView(c);
             icon.setImageResource(art[i]);
             icon.setScaleType(ImageView.ScaleType.FIT_CENTER);
-            tile.addView(icon, new LinearLayout.LayoutParams(Ui.dp(c, 26), Ui.dp(c, 26)));
-            TextView l = Ui.text(c, labels[i], 8.5f, Ui.WHITE, true);
+            tile.addView(icon, new LinearLayout.LayoutParams(Ui.dp(c, 34), Ui.dp(c, 34)));
+            TextView l = Ui.text(c, labels[i], 11.5f, Ui.WHITE, true);
             l.setGravity(Gravity.CENTER);
             l.setPadding(0, Ui.dp(c, 6), 0, 0);
             tile.addView(l);
             row.addView(tile);
         }
-        TextView tip = Ui.text(c, "Play rated games to see your stats", 9.5f, Ui.WHITE, true);
+        TextView tip = Ui.text(c, "Play rated games to see your stats", 12.5f, Ui.WHITE, true);
         tip.setGravity(Gravity.CENTER);
         tip.setPadding(0, Ui.dp(c, 10), 0, Ui.dp(c, 3));
         card.addView(tip);
-        TextView how = Ui.text(c, "How do ratings work?", 8, Ui.GREY, false);
+        TextView how = Ui.text(c, "How do ratings work?", 10, Ui.GREY, false);
         how.setGravity(Gravity.CENTER);
         how.setPadding(0, 0, 0, Ui.dp(c, 2));
         card.addView(how);
@@ -677,10 +677,10 @@ public class HomeScreen {
         card.setLayoutParams(p);
         card.setPadding(Ui.dp(c, 8), Ui.dp(c, 14), Ui.dp(c, 8), Ui.dp(c, 10));
 
-        TextView folder = Ui.glyph(c, "folder_open", 30, 0xFF8A8780);
-        folder.setLayoutParams(new LinearLayout.LayoutParams(Ui.dp(c, 40), Ui.dp(c, 42)));
+        TextView folder = Ui.glyph(c, "folder_open", 36, 0xFF8A8780);
+        folder.setLayoutParams(new LinearLayout.LayoutParams(Ui.dp(c, 48), Ui.dp(c, 50)));
         card.addView(folder);
-        TextView t = Ui.text(c, "Your games will appear here", 12, Ui.WHITE, true);
+        TextView t = Ui.text(c, "Your games will appear here", 14, Ui.WHITE, true);
         t.setGravity(Gravity.CENTER);
         t.setPadding(0, Ui.dp(c, 10), 0, Ui.dp(c, 10));
         card.addView(t);
@@ -710,11 +710,11 @@ public class HomeScreen {
         row.setGravity(Gravity.CENTER);
         row.setBackground(Ui.round(0xFF2E2C29, 6, c));
         LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 38));
-        p.setMargins(Ui.dp(c, 4), Ui.dp(c, 4), Ui.dp(c, 4), Ui.dp(c, 2));
+                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 48));
+        p.setMargins(Ui.dp(c, 4), Ui.dp(c, 5), Ui.dp(c, 4), Ui.dp(c, 3));
         row.setLayoutParams(p);
-        row.addView(Ui.glyph(c, glyphName, 16, 0xFFDAD7D2));
-        TextView t = Ui.text(c, "   " + label, 12, Ui.WHITE, true);
+        row.addView(Ui.glyph(c, glyphName, 19, 0xFFDAD7D2));
+        TextView t = Ui.text(c, "   " + label, 14.5f, Ui.WHITE, true);
         row.addView(t);
         row.setOnClickListener(click);
         return row;
@@ -725,7 +725,7 @@ public class HomeScreen {
         LinearLayout card = Ui.linear(c, LinearLayout.HORIZONTAL);
         card.setBackground(Ui.cardBg(c, 6));
         LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 46));
+                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 64));
         p.setMargins(Ui.dp(c, 6), Ui.dp(c, 6), Ui.dp(c, 9), 0);
         card.setLayoutParams(p);
         card.setPadding(Ui.dp(c, 8), 0, Ui.dp(c, 9), 0);
@@ -737,7 +737,7 @@ public class HomeScreen {
         av.addView(Ui.glyph(c, "person", 18, 0xFFE4E1DB),
                 new FrameLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        card.addView(av, new LinearLayout.LayoutParams(Ui.dp(c, 32), Ui.dp(c, 32)));
+        card.addView(av, new LinearLayout.LayoutParams(Ui.dp(c, 42), Ui.dp(c, 42)));
 
         LinearLayout info = Ui.linear(c, LinearLayout.VERTICAL);
         LinearLayout.LayoutParams ip = new LinearLayout.LayoutParams(0,
@@ -745,13 +745,13 @@ public class HomeScreen {
         ip.setMargins(Ui.dp(c, 8), 0, 0, 0);
         info.setLayoutParams(ip);
         info.addView(Ui.text(c, main.state.lastOpponent.isEmpty() ? "codon201100" : main.state.lastOpponent,
-                8.5f, Ui.WHITE, true));
+                11.5f, Ui.WHITE, true));
         info.addView(Ui.text(c, (main.state.lastResult.isEmpty() ? "Finished" : main.state.lastResult)
-                + "  •  10 min", 7, Ui.GREY, false));
+                + "  •  10 min", 9, Ui.GREY, false));
         card.addView(info);
 
         card.addView(Ui.text(c, main.state.lastAccuracy.isEmpty() ? "—" : main.state.lastAccuracy,
-                8.5f, 0xFF81B64C, true));
+                11.5f, 0xFF81B64C, true));
         return card;
     }
 

@@ -42,10 +42,10 @@ public class MoreScreen {
         // ---- logo ----
         LinearLayout logoWrap = Ui.linear(c, LinearLayout.HORIZONTAL);
         logoWrap.setGravity(Gravity.CENTER);
-        logoWrap.setPadding(0, Ui.dp(c, 20), 0, 0);
-        logoWrap.addView(Ui.logo(c, 17, 13));
+        logoWrap.setPadding(0, Ui.dp(c, 22), 0, 0);
+        logoWrap.addView(Ui.logo(c, 22, 16));
         root.addView(logoWrap);
-        root.addView(Ui.spacer(c, 1, Ui.dp(c, 14)));
+        root.addView(Ui.spacer(c, 1, Ui.dp(c, 16)));
 
         // ---- Try Premium banner ----
         LinearLayout banner = Ui.linear(c, LinearLayout.HORIZONTAL);
@@ -53,26 +53,27 @@ public class MoreScreen {
         GradientDrawable bg = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
                 new int[]{0xFF0070B1, 0xFF0085C3});
         bg.setCornerRadius(Ui.dp(c, 7));
+        bg.setCornerRadius(Ui.dp(c, 10));
         banner.setBackground(bg);
         LinearLayout.LayoutParams bp = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 49));
-        bp.setMargins(Ui.dp(c, 47), 0, Ui.dp(c, 47), 0);
+                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 96));
+        bp.setMargins(Ui.dp(c, 16), 0, Ui.dp(c, 16), 0);
         banner.setLayoutParams(bp);
-        banner.setPadding(Ui.dp(c, 8), 0, Ui.dp(c, 8), 0);
+        banner.setPadding(Ui.dp(c, 14), 0, Ui.dp(c, 14), 0);
 
         ImageView gem = new ImageView(c);
         gem.setImageResource(R.drawable.more_gem);
         gem.setScaleType(ImageView.ScaleType.FIT_CENTER);
         banner.addView(gem, new LinearLayout.LayoutParams(
-                Ui.dp(c, 38), Ui.dp(c, 35)));
+                Ui.dp(c, 60), Ui.dp(c, 56)));
         LinearLayout bt = Ui.linear(c, LinearLayout.VERTICAL);
         bt.setGravity(Gravity.CENTER_VERTICAL);
         LinearLayout.LayoutParams btp = new LinearLayout.LayoutParams(0,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
-        btp.setMargins(Ui.dp(c, 4), 0, 0, 0);
+        btp.setMargins(Ui.dp(c, 10), 0, 0, 0);
         bt.setLayoutParams(btp);
-        bt.addView(Ui.text(c, "Try Premium", 13, Ui.WHITE, true));
-        bt.addView(Ui.text(c, "Play your best chess!", 8.5f, 0xFFCFE8F8, false));
+        bt.addView(Ui.text(c, "Try Premium", 20, Ui.WHITE, true));
+        bt.addView(Ui.text(c, "Play your best chess!", 12, 0xFFCFE8F8, false));
         banner.addView(bt);
         banner.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) { main.navigate("premium"); }
@@ -81,17 +82,17 @@ public class MoreScreen {
 
         // ---- sections ----
         for (String[] section : SECTIONS) {
-            TextView label = Ui.text(c, section[0], 10, 0xFFF0F0F0, true);
-            label.setPadding(Ui.dp(c, 47), Ui.dp(c, 27), 0, Ui.dp(c, 10));
+            TextView label = Ui.text(c, section[0], 13.5f, 0xFFF0F0F0, true);
+            label.setPadding(Ui.dp(c, 24), Ui.dp(c, 30), 0, Ui.dp(c, 10));
             root.addView(label);
 
             for (int i = 1; i < section.length; i++) {
                 final String[] parts = section[i].split("\\|");
                 LinearLayout row = Ui.linear(c, LinearLayout.HORIZONTAL);
                 row.setGravity(Gravity.CENTER_VERTICAL);
-                row.setPadding(Ui.dp(c, 45), 0, Ui.dp(c, 47), 0);
+                row.setPadding(Ui.dp(c, 24), 0, Ui.dp(c, 24), 0);
                 row.setLayoutParams(new LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 35)));
+                        ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 68)));
 
                 int res = c.getResources().getIdentifier(
                         "more_" + parts[0], "drawable", c.getPackageName());
@@ -99,20 +100,20 @@ public class MoreScreen {
                 icon.setImageResource(res);
                 icon.setScaleType(ImageView.ScaleType.FIT_XY);
                 row.addView(icon, new LinearLayout.LayoutParams(
-                        Ui.dp(c, 24), Ui.dp(c, 24)));
+                        Ui.dp(c, 32), Ui.dp(c, 32)));
 
-                TextView t = Ui.text(c, parts[1], 11.5f, 0xFFF0EFED, true);
+                TextView t = Ui.text(c, parts[1], 16, 0xFFF0EFED, true);
                 LinearLayout.LayoutParams tp = new LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                tp.setMargins(Ui.dp(c, 4), 0, 0, 0);
+                tp.setMargins(Ui.dp(c, 16), 0, 0, 0);
                 t.setLayoutParams(tp);
                 row.addView(t);
                 row.addView(Ui.spacerWeight(c, 1f));
                 if (parts.length > 2 && parts[2].equals("tv")) {
-                    TextView live = Ui.text(c, "LIVE", 7, Ui.WHITE, true);
+                    TextView live = Ui.text(c, "LIVE", 9, Ui.WHITE, true);
                     live.setGravity(Gravity.CENTER);
-                    live.setBackground(Ui.round(0xFFE02828, 2, c));
-                    live.setPadding(Ui.dp(c, 4), Ui.dp(c, 1), Ui.dp(c, 4), Ui.dp(c, 1));
+                    live.setBackground(Ui.round(0xFFE02828, 3, c));
+                    live.setPadding(Ui.dp(c, 6), Ui.dp(c, 2), Ui.dp(c, 6), Ui.dp(c, 2));
                     row.addView(live);
                 }
 
@@ -132,7 +133,7 @@ public class MoreScreen {
                 root.addView(row);
             }
         }
-        root.addView(Ui.spacer(c, 1, Ui.dp(c, 12)));
+        root.addView(Ui.spacer(c, 1, Ui.dp(c, 24)));
 
         return scroll;
     }
