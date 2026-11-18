@@ -31,9 +31,21 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         state.load(this);
 
+        getWindow().setStatusBarColor(0xFF22201E);
+        getWindow().setNavigationBarColor(0xFF211F1C);
+
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setBackgroundColor(Ui.BG);
+        // keep content clear of the status bar / gesture bar
+        root.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
+            @Override public android.view.WindowInsets onApplyWindowInsets(View v,
+                                                                           android.view.WindowInsets insets) {
+                v.setPadding(0, insets.getSystemWindowInsetTop(),
+                        0, insets.getSystemWindowInsetBottom());
+                return insets;
+            }
+        });
 
         content = new FrameLayout(this);
         content.setLayoutParams(new LinearLayout.LayoutParams(
@@ -42,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
 
         bottomNav = buildBottomNav();
         root.addView(bottomNav, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(this, 54)));
+                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(this, 46)));
 
         setContentView(root);
         showSplash();
@@ -67,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
 
         new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(new Runnable() {
             @Override public void run() {
-                if ("splash".equals(current)) navigate("login");
+                if ("splash".equals(current)) navigate("home");
             }
         }, 1400);
     }
@@ -115,8 +127,10 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout buildBottomNav() {
         LinearLayout nav = new LinearLayout(this);
         nav.setOrientation(LinearLayout.HORIZONTAL);
-        nav.setBackgroundColor(0xFF211F1C);
+        nav.setBackgroundColor(0xFF262421);
         nav.setGravity(Gravity.CENTER_VERTICAL);
+        nav.setClipChildren(false);
+        nav.setClipToPadding(false);
 
         int[] icons = {R.drawable.ic_nav_pawn, R.drawable.ic_nav_puzzle, R.drawable.ic_nav_cap,
                 R.drawable.ic_nav_binoculars, R.drawable.ic_nav_more};
@@ -129,44 +143,48 @@ public class MainActivity extends AppCompatActivity {
 
     private LinearLayout navItem(final String label, int iconRes) {
         final LinearLayout item = new LinearLayout(this);
-        item.setOrientation(LinearLayout.VERTICAL);
+        item.setOrientation(LinearLayout.HORIZONTAL);
         item.setGravity(Gravity.CENTER);
+        item.setClipChildren(false);
+        item.setClipToPadding(false);
         item.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f));
-        item.setPadding(0, Ui.dp(this, 4), 0, Ui.dp(this, 3));
 
         ImageView icon = new ImageView(this);
         icon.setImageResource(iconRes);
-        icon.setLayoutParams(new LinearLayout.LayoutParams(Ui.dp(this, 20), Ui.dp(this, 20)));
+        icon.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        icon.setColorFilter(0xFF8A8780);
 
         FrameLayout iconWrap = new FrameLayout(this);
         iconWrap.setClipChildren(false);
         iconWrap.setLayoutParams(new LinearLayout.LayoutParams(
-                Ui.dp(this, 20), Ui.dp(this, 20)));
-        iconWrap.addView(icon);
+                Ui.dp(this, 16), Ui.dp(this, 16)));
+        iconWrap.addView(icon, new FrameLayout.LayoutParams(
+                Ui.dp(this, 16), Ui.dp(this, 16), Gravity.CENTER));
         if ("More".equals(label)) {
             moreBadge = new TextView(this);
             moreBadge.setText("1");
-            moreBadge.setTextSize(9);
+            moreBadge.setTextSize(7);
             moreBadge.setTextColor(0xFFFFFFFF);
             moreBadge.setTypeface(null, Typeface.BOLD);
             moreBadge.setGravity(Gravity.CENTER);
-            moreBadge.setBackground(Ui.round(0xFFFA412D, 8, this));
+            moreBadge.setIncludeFontPadding(false);
+            moreBadge.setBackground(Ui.round(0xFFFA412D, 5, this));
             FrameLayout.LayoutParams bp = new FrameLayout.LayoutParams(
-                    Ui.dp(this, 15), Ui.dp(this, 15));
+                    Ui.dp(this, 10), Ui.dp(this, 10));
             bp.gravity = Gravity.TOP | Gravity.END;
             bp.topMargin = -Ui.dp(this, 5);
-            bp.rightMargin = -Ui.dp(this, 7);
+            bp.rightMargin = -Ui.dp(this, 5);
             moreBadge.setLayoutParams(bp);
             moreBadge.setVisibility(state.hasPlayed() ? View.VISIBLE : View.GONE);
             iconWrap.addView(moreBadge);
         }
         item.addView(iconWrap);
 
-        TextView tv = Ui.text(this, label, 10, Ui.WHITE, true);
+        TextView tv = Ui.text(this, label, 8.5f, 0xFF8A8780, false);
         tv.setGravity(Gravity.CENTER);
         LinearLayout.LayoutParams tp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        tp.setMargins(0, Ui.dp(this, 2), 0, 0);
+        tp.setMargins(Ui.dp(this, 4), 0, 0, 0);
         tv.setLayoutParams(tp);
         item.addView(tv);
 

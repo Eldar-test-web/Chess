@@ -34,22 +34,23 @@ public class PuzzlesScreen {
         LinearLayout top = Ui.linear(c, LinearLayout.HORIZONTAL);
         top.setGravity(Gravity.CENTER);
         top.setPadding(0, Ui.dp(c, 12), 0, Ui.dp(c, 8));
-        ImageView icon = new ImageView(c);
-        icon.setImageResource(R.drawable.icon_puzzle_green2);
+        TextView icon = Ui.glyph(c, "extension", 26, Ui.GREEN);
         icon.setLayoutParams(new LinearLayout.LayoutParams(Ui.dp(c, 26), Ui.dp(c, 30)));
         top.addView(icon);
         top.addView(Ui.text(c, "  Puzzles", 17, Ui.WHITE, true));
         root.addView(top);
 
         LinearLayout info = Ui.linear(c, LinearLayout.HORIZONTAL);
+        info.setGravity(Gravity.CENTER_VERTICAL);
         info.setPadding(Ui.dp(c, 12), Ui.dp(c, 2), Ui.dp(c, 12), Ui.dp(c, 6));
         final TextView rating = Ui.text(c, "Puzzle rating: " + main.state.puzzleRating, 13,
                 Ui.GREY, true);
         info.addView(rating);
-        Ui.spacerWeight(c, 1f);
+        info.addView(Ui.spacerWeight(c, 1f));
         TextView solved = Ui.text(c, "Solved: " + main.state.puzzlesSolved, 13, Ui.GREY, false);
         info.addView(solved);
-        root.addView(info);
+        root.addView(info, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         if (queue == null) {
             queue = new ArrayList<>(PuzzleData.all());
@@ -161,11 +162,11 @@ public class PuzzlesScreen {
         TextView title = Ui.text(c, "Mate in 1 - find the best move!", 14, Ui.WHITE, true);
         bottom.addView(title);
 
-        TextView solve = Ui.text(c, "Show Solution", 15, Ui.WHITE, true);
+        TextView solve = Ui.text(c, "Show Solution", 14, Ui.WHITE, true);
         solve.setGravity(Gravity.CENTER);
-        solve.setBackground(Ui.round(Ui.GREEN, 10, c));
+        solve.setBackground(Ui.round(Ui.GREEN, 8, c));
         LinearLayout.LayoutParams sp = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 42));
+                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 36));
         sp.setMargins(0, Ui.dp(c, 8), 0, 0);
         solve.setLayoutParams(sp);
         solve.setOnClickListener(new View.OnClickListener() {

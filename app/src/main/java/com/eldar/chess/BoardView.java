@@ -68,9 +68,13 @@ public class BoardView extends View {
 
     private int squareSize() { return getWidth() / 8; }
 
+    /** the 8x8 board is square; centre it vertically in the view */
+    private int boardTop() { return Math.max(0, (getHeight() - getWidth()) / 2); }
+
     @Override protected void onDraw(Canvas canvas) {
         int sq = squareSize();
         if (sq <= 0) return;
+        int boardY = boardTop();
         String[] rows = parseFen(fen);
 
         for (int row = 0; row < 8; row++) {          // row 0 = top
@@ -78,7 +82,7 @@ public class BoardView extends View {
                 int file = flipped ? 7 - col : col;
                 int rank = flipped ? row : 7 - row;
                 boolean lightSquare = ((file + rank) % 2) == 1;
-                int x = col * sq, y = row * sq;
+                int x = col * sq, y = boardY + row * sq;
                 int color = lightSquare ? LIGHT : DARK;
                 if (lastMove != null && isLast(file, rank)) color = HIGHLIGHT;
                 if (selected != null && selected[0] == file && selected[1] == rank) {
@@ -127,7 +131,7 @@ public class BoardView extends View {
             boolean lightSquare = ((file + rank) % 2) == 1;
             String letter = String.valueOf((char) ('a' + file));
             float lx = col * sq + sq - sq * 0.12f;
-            float ly = 7 * sq + sq - sq * 0.10f;
+            float ly = boardY + 7 * sq + sq - sq * 0.10f;
             boolean lastCol = lastMove != null && (lastMove[2] == file && lastMove[3] == rank);
             textPaint.setColor(lastCol ? 0xFF4A4A3A : (lightSquare ? 0x8C739552 : 0x9CEBECD0));
             canvas.drawText(letter, lx, ly, textPaint);
@@ -138,7 +142,7 @@ public class BoardView extends View {
             boolean lightSquare = ((file + rank) % 2) == 1;
             String num = String.valueOf(rank + 1);
             float lx = sq * 0.14f;
-            float ly = row * sq + sq * 0.20f;
+            float ly = boardY + row * sq + sq * 0.20f;
             boolean lastRow = lastMove != null && (lastMove[2] == file && lastMove[3] == rank);
             textPaint.setColor(lastRow ? 0xFF4A4A3A : (lightSquare ? 0x8C739552 : 0x9CEBECD0));
             canvas.drawText(num, lx, ly, textPaint);
@@ -200,7 +204,7 @@ public class BoardView extends View {
         int sq = squareSize();
         if (sq <= 0) return true;
         int col = (int) (ev.getX() / sq);
-        int row = (int) (ev.getY() / sq);
+        int row = (int) ((ev.getY() - boardTop()) / sq);
         if (col < 0 || col > 7 || row < 0 || row > 7) return true;
         int file = flipped ? 7 - col : col;
         int rank = flipped ? row : 7 - row;

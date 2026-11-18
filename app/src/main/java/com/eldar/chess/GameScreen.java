@@ -37,7 +37,7 @@ public class GameScreen {
     private TextView opponentClock, userClock, opponentName, userName;
     private ImageView opponentFlag, userFlag;
     private LinearLayout opponentRow;
-    private ImageView opponentAvatar;
+    private FrameLayout opponentAvatar;
     private HorizontalScrollView moveScroll;
     private LinearLayout moveRow;
     private FrameLayout boardOverlay;
@@ -116,28 +116,30 @@ public class GameScreen {
         opponentRow = Ui.linear(c, LinearLayout.HORIZONTAL);
         opponentRow.setGravity(Gravity.CENTER_VERTICAL);
         opponentRow.setPadding(Ui.dp(c, 8), Ui.dp(c, 8), Ui.dp(c, 8), Ui.dp(c, 8));
-        opponentAvatar = new ImageView(c);
-        opponentAvatar.setImageResource(R.drawable.avatar_grey);
-        opponentAvatar.setBackground(Ui.round(0xFF4A4844, 4, c));
+        opponentAvatar = new FrameLayout(c);
+        opponentAvatar.setBackground(Ui.round(0xFFD9D5CC, 4, c));
+        opponentAvatar.addView(Ui.glyph(c, "person", 17, 0xFF3B3935),
+                new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         opponentRow.addView(opponentAvatar, new LinearLayout.LayoutParams(
-                Ui.dp(c, 38), Ui.dp(c, 38)));
+                Ui.dp(c, 30), Ui.dp(c, 30)));
 
-        opponentName = Ui.text(c, "", 14, Ui.WHITE, true);
+        opponentName = Ui.text(c, "", 11, Ui.WHITE, false);
         LinearLayout.LayoutParams np = new LinearLayout.LayoutParams(
                 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
-        np.setMargins(Ui.dp(c, 10), 0, 0, 0);
+        np.setMargins(Ui.dp(c, 7), 0, 0, 0);
         opponentName.setLayoutParams(np);
         opponentRow.addView(opponentName);
 
         opponentFlag = new ImageView(c);
-        opponentFlag.setLayoutParams(new LinearLayout.LayoutParams(Ui.dp(c, 16), Ui.dp(c, 11)));
+        opponentFlag.setLayoutParams(new LinearLayout.LayoutParams(Ui.dp(c, 10), Ui.dp(c, 7)));
         opponentRow.addView(opponentFlag);
 
-        opponentClock = Ui.text(c, "10:00", 15, Ui.WHITE, true);
+        opponentClock = Ui.text(c, "10:00", 12, Ui.WHITE, true);
         opponentClock.setGravity(Gravity.CENTER);
         opponentClock.setBackground(Ui.round(0xFF56534E, 4, c));
         LinearLayout.LayoutParams ocp = new LinearLayout.LayoutParams(
-                Ui.dp(c, 76), Ui.dp(c, 30));
+                Ui.dp(c, 53), Ui.dp(c, 29));
         ocp.setMargins(Ui.dp(c, 8), 0, 0, 0);
         opponentClock.setLayoutParams(ocp);
         opponentRow.addView(opponentClock);
@@ -148,23 +150,21 @@ public class GameScreen {
         coachBubble.setVisibility(View.GONE);
         coachBubble.setGravity(Gravity.CENTER_VERTICAL);
         coachBubble.setPadding(Ui.dp(c, 6), Ui.dp(c, 0), Ui.dp(c, 8), Ui.dp(c, 4));
-        ImageView coachAv = new ImageView(c);
-        coachAv.setImageResource(R.drawable.avatar_coach_bubble);
-        coachAv.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        FrameLayout coachAv = new FrameLayout(c);
+        View coachBg = new View(c);
+        coachBg.setBackground(Ui.round(0xFFD9D5CC, 17, c));
+        coachAv.addView(coachBg, new FrameLayout.LayoutParams(
+                Ui.dp(c, 34), Ui.dp(c, 34), Gravity.CENTER));
+        coachAv.addView(Ui.glyph(c, "person", 21, 0xFF3B3935),
+                new FrameLayout.LayoutParams(
+                        Ui.dp(c, 34), Ui.dp(c, 34), Gravity.CENTER));
         coachBubble.addView(coachAv, new LinearLayout.LayoutParams(
-                Ui.dp(c, 50), Ui.dp(c, 57)));
-        coachAv.setTranslationY(-Ui.dp(c, 14));   // overlaps the name row (072139)
-        View tail = new View(c);
-        tail.setBackground(Ui.round(0xFFC9C6BE, 3, c));
-        tail.setRotation(45f);
-        LinearLayout.LayoutParams tailP = new LinearLayout.LayoutParams(
-                Ui.dp(c, 14), Ui.dp(c, 14));
-        tailP.setMargins(0, 0, -Ui.dp(c, 7), 0);
-        coachBubble.addView(tail, tailP);
-        coachText = Ui.text(c, COACH_TIPS[0], 13, 0xFF3B3935, false);
-        coachText.setTextColor(0xFF3B3935);
-        coachText.setBackground(Ui.round(0xFFC9C6BE, 10, c));
-        coachText.setPadding(Ui.dp(c, 12), Ui.dp(c, 8), Ui.dp(c, 10), Ui.dp(c, 8));
+                Ui.dp(c, 38), Ui.dp(c, 46)));
+        coachAv.setTranslationY(-Ui.dp(c, 10));   // overlaps the name row (072139)
+        coachText = Ui.text(c, COACH_TIPS[0], 12, 0xFF2E2C29, false);
+        coachText.setTextColor(0xFF2E2C29);
+        coachText.setBackground(Ui.round(0xFFB8B7B6, 8, c));
+        coachText.setPadding(Ui.dp(c, 10), Ui.dp(c, 7), Ui.dp(c, 10), Ui.dp(c, 7));
         LinearLayout.LayoutParams bp = new LinearLayout.LayoutParams(
                 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
         bp.setMargins(0, 0, Ui.dp(c, 10), 0);
@@ -192,17 +192,18 @@ public class GameScreen {
         searching.setGravity(Gravity.CENTER);
         ((LinearLayout) searchDim).addView(searching);
         FrameLayout stopHalo = new FrameLayout(c);
-        stopHalo.setBackground(Ui.round(0x2EFFFFFF, 16, c));
-        ImageView stopButton = new ImageView(c);
-        stopButton.setImageResource(R.drawable.icon_stopwatch);
-        stopButton.setBackground(Ui.round(0xFF2E2C29, 10, c));
-        stopButton.setPadding(Ui.dp(c, 12), Ui.dp(c, 12), Ui.dp(c, 12), Ui.dp(c, 12));
+        stopHalo.setBackground(Ui.round(0x2EFFFFFF, 13, c));
+        FrameLayout stopButton = new FrameLayout(c);
+        stopButton.setBackground(Ui.round(0xFF2E2C29, 8, c));
+        stopButton.addView(Ui.glyph(c, "timer", 19, Ui.WHITE),
+                new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         FrameLayout.LayoutParams sbp = new FrameLayout.LayoutParams(
-                Ui.dp(c, 56), Ui.dp(c, 56), Gravity.CENTER);
+                Ui.dp(c, 44), Ui.dp(c, 44), Gravity.CENTER);
         stopHalo.addView(stopButton, sbp);
         LinearLayout.LayoutParams stp = new LinearLayout.LayoutParams(
-                Ui.dp(c, 74), Ui.dp(c, 74));
-        stp.setMargins(0, Ui.dp(c, 14), 0, 0);
+                Ui.dp(c, 60), Ui.dp(c, 60));
+        stp.setMargins(0, Ui.dp(c, 10), 0, 0);
         stopHalo.setLayoutParams(stp);
         stopHalo.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) { main.navigate("home"); }
@@ -217,27 +218,29 @@ public class GameScreen {
         LinearLayout userRow = Ui.linear(c, LinearLayout.HORIZONTAL);
         userRow.setGravity(Gravity.CENTER_VERTICAL);
         userRow.setPadding(Ui.dp(c, 8), Ui.dp(c, 8), Ui.dp(c, 8), Ui.dp(c, 8));
-        ImageView userAv = new ImageView(c);
-        userAv.setImageResource(R.drawable.avatar_grey);
-        userAv.setBackground(Ui.round(0xFF4A4844, 4, c));
-        userRow.addView(userAv, new LinearLayout.LayoutParams(Ui.dp(c, 38), Ui.dp(c, 38)));
+        FrameLayout userAv = new FrameLayout(c);
+        userAv.setBackground(Ui.round(0xFFD9D5CC, 4, c));
+        userAv.addView(Ui.glyph(c, "person", 17, 0xFF3B3935),
+                new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        userRow.addView(userAv, new LinearLayout.LayoutParams(Ui.dp(c, 30), Ui.dp(c, 30)));
 
-        userName = Ui.text(c, "", 14, Ui.WHITE, true);
+        userName = Ui.text(c, "", 11, Ui.WHITE, false);
         LinearLayout.LayoutParams unp = new LinearLayout.LayoutParams(
                 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
-        unp.setMargins(Ui.dp(c, 10), 0, 0, 0);
+        unp.setMargins(Ui.dp(c, 7), 0, 0, 0);
         userName.setLayoutParams(unp);
         userRow.addView(userName);
 
         userFlag = new ImageView(c);
-        userFlag.setLayoutParams(new LinearLayout.LayoutParams(Ui.dp(c, 16), Ui.dp(c, 11)));
+        userFlag.setLayoutParams(new LinearLayout.LayoutParams(Ui.dp(c, 10), Ui.dp(c, 7)));
         userRow.addView(userFlag);
 
-        userClock = Ui.text(c, "10:00", 15, Ui.WHITE, true);
+        userClock = Ui.text(c, "10:00", 12, Ui.WHITE, true);
         userClock.setGravity(Gravity.CENTER);
         userClock.setBackground(Ui.round(0xFF56534E, 4, c));
         LinearLayout.LayoutParams ucp = new LinearLayout.LayoutParams(
-                Ui.dp(c, 76), Ui.dp(c, 30));
+                Ui.dp(c, 53), Ui.dp(c, 29));
         ucp.setMargins(Ui.dp(c, 8), 0, 0, 0);
         userClock.setLayoutParams(ucp);
         userRow.addView(userClock);
@@ -401,7 +404,8 @@ public class GameScreen {
             clock.setTextColor(Ui.WHITE);
             clock.setBackground(Ui.roundStroke(0xFF000000, 4, 0xFFFFFFFF, 1.5f, main));
             android.graphics.drawable.Drawable icon =
-                    main.getResources().getDrawable(R.drawable.icon_clock_small, null);
+                    main.getResources().getDrawable(R.drawable.ic_clock_small, null);
+            icon.setTint(0xFFFFFFFF);
             icon.setBounds(0, 0, Ui.dp(main, 12), Ui.dp(main, 14));
             clock.setCompoundDrawables(icon, null, null, null);
             clock.setCompoundDrawablePadding(Ui.dp(main, 4));
@@ -440,8 +444,7 @@ public class GameScreen {
                 moveRow.addView(n);
             }
             TextView chip = Ui.text(main, san, 12, Ui.WHITE, false);
-            chip.setPadding(Ui.dp(main, 6), Ui.dp(main, 2), Ui.dp(main, 6), Ui.dp(main, 2));
-            if (white) chip.setBackground(Ui.round(0xFF403D39, 4, main));
+            chip.setPadding(Ui.dp(main, 5), Ui.dp(main, 2), Ui.dp(main, 5), Ui.dp(main, 2));
             moveRow.addView(chip);
             if (!white) moveNo++;
         }

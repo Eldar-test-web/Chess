@@ -62,9 +62,66 @@ public class Ui {
         return new LinearLayout.LayoutParams(w, h, weight);
     }
 
+    private static android.graphics.Typeface iconTypeface;
+
+    /** Material Icons glyph shown as text (e.g. "home", "extension"). */
+    public static TextView glyph(Context c, String name, float sp, int color) {
+        TextView t = new TextView(c);
+        if (iconTypeface == null) {
+            iconTypeface = c.getResources().getFont(R.font.material_icons);
+        }
+        t.setText(name);
+        t.setTextSize(sp);
+        t.setTextColor(color);
+        t.setTypeface(iconTypeface);
+        t.setGravity(Gravity.CENTER);
+        t.setIncludeFontPadding(false);
+        return t;
+    }
+
+    /** Scaled checkerboard pattern view (used behind the Learn / first-game banners). */
+    public static View checker(Context c, final int colorA, final int colorB, final int cells) {
+        View v = new View(c) {
+            @Override protected void onDraw(Canvas canvas) {
+                float w = getWidth() / (float) cells, h = getHeight() / (float) cells;
+                Paint p = new Paint();
+                for (int y = 0; y < cells; y++) {
+                    for (int x = 0; x < cells; x++) {
+                        p.setColor(((x + y) & 1) == 0 ? colorA : colorB);
+                        canvas.drawRect(x * w, y * h, (x + 1) * w, (y + 1) * h, p);
+                    }
+                }
+            }
+        };
+        v.setWillNotDraw(false);
+        return v;
+    }
+
     public static GradientDrawable round(int color, float radiusDp, Context c) {
         GradientDrawable g = new GradientDrawable();
         g.setColor(color);
+        g.setCornerRadius(dp(c, radiusDp));
+        return g;
+    }
+
+    /** Page backdrop of the dark screens (subtle vertical gradient seen in every SS). */
+    public static GradientDrawable pageBg() {
+        GradientDrawable g = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
+                new int[]{0xFF22201E, 0xFF282523, 0xFF2B2826, 0xFF2F2C2A, 0xFF262421});
+        g.setColors(new int[]{0xFF22201E, 0xFF282523, 0xFF2B2826, 0xFF2F2C2A, 0xFF262421},
+                new float[]{0f, 0.42f, 0.62f, 0.84f, 1f});
+        return g;
+    }
+
+    /** chess.com cards are white @ ~8% over the page gradient. */
+    public static GradientDrawable cardBg(Context c, float radiusDp) {
+        return round(0x15FFFFFF, radiusDp, c);
+    }
+
+    /** Pinned Play bar / green CTA fill. */
+    public static GradientDrawable greenFill(Context c, float radiusDp) {
+        GradientDrawable g = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
+                new int[]{0xFF86BA52, 0xFF67A04A});
         g.setCornerRadius(dp(c, radiusDp));
         return g;
     }
@@ -117,17 +174,38 @@ public class Ui {
         v.setPadding(dp(c, l), dp(c, t), dp(c, r), dp(c, b));
     }
 
+    /** Green pawn silhouette drawn natively (no screenshot crop). */
+    public static Drawable logoPawn(Context c, int heightDp) {
+        int h = dp(c, heightDp);
+        int w = Math.max(1, Math.round(h * 0.62f));
+        Bitmap b = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        Canvas cv = new Canvas(b);
+        Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
+        p.setColor(0xFF7FA650);
+        cv.drawRoundRect(w * 0.10f, h * 0.84f, w * 0.90f, h * 0.98f,
+                w * 0.16f, h * 0.06f, p);
+        cv.drawRoundRect(w * 0.32f, h * 0.44f, w * 0.68f, h * 0.90f,
+                w * 0.14f, w * 0.14f, p);
+        cv.drawRoundRect(w * 0.20f, h * 0.38f, w * 0.80f, h * 0.52f,
+                w * 0.12f, h * 0.05f, p);
+        cv.drawCircle(w * 0.5f, h * 0.24f, w * 0.24f, p);
+        p.setColor(0x3383B455);
+        cv.drawCircle(w * 0.43f, h * 0.19f, w * 0.09f, p);
+        return new BitmapDrawable(c.getResources(), b);
+    }
+
     /** Chess.com logo row: green pawn + "Chess.com" */
     public static LinearLayout logo(Context c, float pawnDp, float textSp) {
         LinearLayout l = linear(c, LinearLayout.HORIZONTAL);
         l.setGravity(Gravity.CENTER_VERTICAL);
         ImageView pawn = new ImageView(c);
-        pawn.setImageResource(R.drawable.logo_pawn);
+        pawn.setImageDrawable(logoPawn(c, Math.round(pawnDp)));
+        pawn.setScaleType(ImageView.ScaleType.FIT_CENTER);
         l.addView(pawn, new LinearLayout.LayoutParams(dp(c, pawnDp * 0.62f), dp(c, pawnDp)));
         TextView t = text(c, "Chess.com", textSp, WHITE, true);
         LinearLayout.LayoutParams tp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        tp.setMargins(dp(c, 3), dp(c, pawnDp * 0.45f), 0, 0);
+        tp.setMargins(dp(c, 3), dp(c, 1), 0, 0);
         t.setLayoutParams(tp);
         l.addView(t);
         return l;
@@ -148,6 +226,32 @@ public class Ui {
         cv.drawCircle(w * 0.52f, h * 0.5f, h * 0.18f, p);
         p.setColor(0xFFFFFFFF);
         cv.drawCircle(w * 0.64f, h * 0.5f, h * 0.08f, p);
+        return new BitmapDrawable(c.getResources(), b);
+    }
+
+    /** Afghanistan flag (tiny, vertical stripes as in the reference screenshot). */
+    public static Drawable flagAf(Context c) {
+        int w = dp(c, 10), h = dp(c, 8);
+        Bitmap b = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        Canvas cv = new Canvas(b);
+        Paint p = new Paint();
+        p.setColor(0xFF000000); cv.drawRect(0, 0, w / 3f, h, p);
+        p.setColor(0xFFD32011); cv.drawRect(w / 3f, 0, 2 * w / 3f, h, p);
+        p.setColor(0xFF007A36); cv.drawRect(2 * w / 3f, 0, w, h, p);
+        p.setColor(0xFFFFFFFF);
+        cv.drawCircle(w * 0.5f, h * 0.5f, h * 0.16f, p);
+        return new BitmapDrawable(c.getResources(), b);
+    }
+
+    /** German flag (tiny, drawn natively). */
+    public static Drawable flagDe(Context c) {
+        int w = dp(c, 22), h = dp(c, 16);
+        Bitmap b = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        Canvas cv = new Canvas(b);
+        Paint p = new Paint();
+        p.setColor(0xFF000000); cv.drawRect(0, 0, w, h / 3f, p);
+        p.setColor(0xFFDD0000); cv.drawRect(0, h / 3f, w, 2 * h / 3f, p);
+        p.setColor(0xFFFFCE00); cv.drawRect(0, 2 * h / 3f, w, h, p);
         return new BitmapDrawable(c.getResources(), b);
     }
 

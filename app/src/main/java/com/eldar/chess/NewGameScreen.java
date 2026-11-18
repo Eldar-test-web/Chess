@@ -36,40 +36,42 @@ public class NewGameScreen {
         title.setGravity(Gravity.CENTER);
         title.setLayoutParams(new LinearLayout.LayoutParams(0,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-        ImageView hand = new ImageView(c);
-        hand.setImageResource(R.drawable.icon_hand_pawn);
-        hand.setLayoutParams(new LinearLayout.LayoutParams(Ui.dp(c, 26), Ui.dp(c, 24)));
+        TextView hand = Ui.glyph(c, "touch_app", 16, 0xFFD5D2CC);
+        hand.setLayoutParams(new LinearLayout.LayoutParams(Ui.dp(c, 18), Ui.dp(c, 18)));
         title.addView(hand);
-        TextView tt = Ui.text(c, "  New Game", 17, Ui.WHITE, true);
+        TextView tt = Ui.text(c, "New Game", 13, Ui.WHITE, true);
+        LinearLayout.LayoutParams ttp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        ttp.setMargins(Ui.dp(c, 4), 0, 0, 0);
+        tt.setLayoutParams(ttp);
         title.addView(tt);
         top.addView(title);
-        Ui.spacer(c, Ui.dp(c, 22), 1);
+        top.addView(Ui.spacer(c, Ui.dp(c, 22), 1));
         root.addView(top);
 
         LinearLayout body = Ui.linear(c, LinearLayout.VERTICAL);
         LinearLayout.LayoutParams bp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        bp.setMargins(Ui.dp(c, 12), Ui.dp(c, 6), Ui.dp(c, 12), 0);
+        bp.setMargins(Ui.dp(c, 47), Ui.dp(c, 4), Ui.dp(c, 47), 0);
         body.setLayoutParams(bp);
 
         // ---- time pill ----
         final LinearLayout timePill = Ui.linear(c, LinearLayout.HORIZONTAL);
         timePill.setGravity(Gravity.CENTER_VERTICAL);
-        timePill.setBackground(Ui.round(0xFF403D39, 8, c));
+        timePill.setBackground(Ui.round(0xFF403D39, 6, c));
         LinearLayout.LayoutParams tpp = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 42));
-        tpp.setMargins(0, Ui.dp(c, 8), 0, 0);
+                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 37));
+        tpp.setMargins(0, Ui.dp(c, 6), 0, 0);
         timePill.setLayoutParams(tpp);
-        timePill.setPadding(Ui.dp(c, 12), 0, Ui.dp(c, 12), 0);
+        timePill.setPadding(Ui.dp(c, 10), 0, Ui.dp(c, 10), 0);
 
-        ImageView sw = new ImageView(c);
-        sw.setImageResource(R.drawable.icon_stopwatch);
-        sw.setLayoutParams(new LinearLayout.LayoutParams(Ui.dp(c, 20), Ui.dp(c, 20)));
+        TextView sw = Ui.glyph(c, "timer", 15, 0xFFD5D2CC);
+        sw.setLayoutParams(new LinearLayout.LayoutParams(Ui.dp(c, 16), Ui.dp(c, 16)));
         timePill.addView(sw);
-        final TextView timeText = Ui.text(c, "  10 min", 14, Ui.WHITE, true);
+        final TextView timeText = Ui.text(c, "  10 min", 12, Ui.WHITE, true);
         timePill.addView(timeText);
-        Ui.spacerWeight(c, 1f);
-        ImageView chev = Ui.img(c, R.drawable.ic_chevron_down, 16);
+        timePill.addView(Ui.spacerWeight(c, 1f));
+        ImageView chev = Ui.img(c, R.drawable.ic_chevron_down, 12);
         chev.setColorFilter(0xFFA8A29A);
         timePill.addView(chev);
         timePill.setOnClickListener(new View.OnClickListener() {
@@ -80,12 +82,12 @@ public class NewGameScreen {
         body.addView(timePill);
 
         // ---- Start Game ----
-        TextView start = Ui.text(c, "Start Game", 16, Ui.WHITE, true);
+        TextView start = Ui.text(c, "Start Game", 13, Ui.WHITE, true);
         start.setGravity(Gravity.CENTER);
-        start.setBackground(Ui.round(Ui.GREEN, 10, c));
+        start.setBackground(Ui.round(Ui.GREEN, 6, c));
         LinearLayout.LayoutParams sp = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 44));
-        sp.setMargins(0, Ui.dp(c, 8), 0, 0);
+                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 37));
+        sp.setMargins(0, Ui.dp(c, 10), 0, 0);
         start.setLayoutParams(sp);
         start.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) {
@@ -95,35 +97,35 @@ public class NewGameScreen {
         body.addView(start);
 
         // ---- option rows ----
-        body.addView(optionRow(c, R.drawable.icon_medal, "Tournaments", new Runnable() {
+        body.addView(optionRow(c, "emoji_events", "Tournaments", new Runnable() {
             @Override public void run() {
                 toast(c, "Tournaments are not available yet");
             }
         }));
-        body.addView(optionRow(c, R.drawable.icon_playfriend, "Play a Friend", new Runnable() {
+        body.addView(optionRow(c, "person", "Play a Friend", new Runnable() {
             @Override public void run() { startGame(main, "passplay", selectedMs[0]); }
         }));
-        body.addView(optionRow(c, R.drawable.icon_playbots, "Play Bots", new Runnable() {
+        body.addView(optionRow(c, "smart_toy", "Play Bots", new Runnable() {
             @Override public void run() { startGame(main, "bots", selectedMs[0]); }
         }));
-        body.addView(optionRow(c, R.drawable.icon_playcoach, "Play Coach", new Runnable() {
+        body.addView(optionRow(c, "psychology", "Play Coach", new Runnable() {
             @Override public void run() { startGame(main, "coach", selectedMs[0]); }
         }));
 
         // ---- expandable section ----
         final LinearLayout extra = Ui.linear(c, LinearLayout.VERTICAL);
         extra.setVisibility(View.GONE);
-        extra.addView(optionRow(c, R.drawable.icon_custom, "Custom Game", new Runnable() {
+        extra.addView(optionRow(c, "tune", "Custom Game", new Runnable() {
             @Override public void run() { showTimeDialog(main, selectedLabel, selectedMs, timeText); }
         }));
-        extra.addView(optionRow(c, R.drawable.icon_inperson, "Play in Person", new Runnable() {
+        extra.addView(optionRow(c, "groups", "Play in Person", new Runnable() {
             @Override public void run() { startGame(main, "passplay", selectedMs[0]); }
         }));
 
-        final ImageView chevBig = Ui.img(c, R.drawable.ic_chevron_down, 26);
+        final ImageView chevBig = Ui.img(c, R.drawable.ic_chevron_down, 18);
         chevBig.setColorFilter(0xFF8A8780);
         LinearLayout.LayoutParams cp = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT, Ui.dp(c, 30));
+                ViewGroup.LayoutParams.WRAP_CONTENT, Ui.dp(c, 22));
         cp.setMargins(0, Ui.dp(c, 6), 0, 0);
         cp.gravity = Gravity.CENTER_HORIZONTAL;
         chevBig.setLayoutParams(cp);
@@ -145,21 +147,20 @@ public class NewGameScreen {
         android.widget.Toast.makeText(c, s, android.widget.Toast.LENGTH_SHORT).show();
     }
 
-    private static LinearLayout optionRow(android.content.Context c, int iconRes, String label,
-                                          final Runnable action) {
+    private static LinearLayout optionRow(android.content.Context c, String glyphName,
+                                          String label, final Runnable action) {
         LinearLayout row = Ui.linear(c, LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER);
-        row.setBackground(Ui.round(0xFF403D39, 8, c));
+        row.setBackground(Ui.round(0xFF403D39, 6, c));
         LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 42));
-        p.setMargins(0, Ui.dp(c, 8), 0, 0);
+                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 37.5f));
+        p.setMargins(0, Ui.dp(c, 10), 0, 0);
         row.setLayoutParams(p);
 
-        ImageView icon = new ImageView(c);
-        icon.setImageResource(iconRes);
-        icon.setLayoutParams(new LinearLayout.LayoutParams(Ui.dp(c, 20), Ui.dp(c, 20)));
+        TextView icon = Ui.glyph(c, glyphName, 15, 0xFFDAD7D2);
+        icon.setLayoutParams(new LinearLayout.LayoutParams(Ui.dp(c, 16), Ui.dp(c, 16)));
         row.addView(icon);
-        row.addView(Ui.text(c, "  " + label, 14, Ui.WHITE, true));
+        row.addView(Ui.text(c, "  " + label, 12, Ui.WHITE, true));
 
         row.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) { action.run(); }

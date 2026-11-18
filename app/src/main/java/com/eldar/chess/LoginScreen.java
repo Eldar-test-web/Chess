@@ -30,7 +30,7 @@ public class LoginScreen {
         top.setGravity(Gravity.CENTER_VERTICAL);
         top.setPadding(0, Ui.dp(c, 14), 0, 0);
 
-        Ui.spacerWeight(c, 1f);
+        top.addView(Ui.spacerWeight(c, 1f));
         LinearLayout logo = Ui.logo(c, 20, 15);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, 1.2f);
@@ -61,52 +61,52 @@ public class LoginScreen {
                 ViewGroup.LayoutParams.MATCH_PARENT, heroH));
 
         // ---- headline ----
-        TextView t1 = Ui.text(c, "Play. Learn.", 30, Ui.WHITE, true);
+        TextView t1 = Ui.text(c, "Play. Learn.", 24, Ui.WHITE, true);
         t1.setGravity(Gravity.CENTER);
-        t1.setPadding(0, Ui.dp(c, 26), 0, 0);
+        t1.setPadding(0, Ui.dp(c, 20), 0, 0);
         root.addView(t1);
-        TextView t2 = Ui.text(c, "Have Fun!", 30, Ui.WHITE, true);
+        TextView t2 = Ui.text(c, "Have Fun!", 24, Ui.WHITE, true);
         t2.setGravity(Gravity.CENTER);
         root.addView(t2);
 
-        Ui.spacer(c, 1, Ui.dp(c, 22));
+        root.addView(Ui.spacer(c, 1, Ui.dp(c, 16)));
 
         // ---- phone row ----
         LinearLayout phoneRow = Ui.linear(c, LinearLayout.HORIZONTAL);
         LinearLayout.LayoutParams prp = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 44));
+                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 30));
         prp.setMargins(Ui.dp(c, 24), 0, Ui.dp(c, 24), 0);
         phoneRow.setLayoutParams(prp);
 
         LinearLayout cc = Ui.linear(c, LinearLayout.HORIZONTAL);
         cc.setGravity(Gravity.CENTER_VERTICAL);
-        cc.setBackground(Ui.round(0xFF3A3835, 8, c));
-        cc.setPadding(Ui.dp(c, 10), 0, Ui.dp(c, 10), 0);
+        cc.setBackground(Ui.round(0xFF3A3835, 6, c));
+        cc.setPadding(Ui.dp(c, 8), 0, Ui.dp(c, 8), 0);
         LinearLayout.LayoutParams ccp = new LinearLayout.LayoutParams(
-                Ui.dp(c, 110), ViewGroup.LayoutParams.MATCH_PARENT);
+                Ui.dp(c, 80), ViewGroup.LayoutParams.MATCH_PARENT);
         cc.setLayoutParams(ccp);
 
         ImageView flag = new ImageView(c);
-        flag.setImageResource(R.drawable.flag_de);
-        flag.setLayoutParams(new LinearLayout.LayoutParams(Ui.dp(c, 22), Ui.dp(c, 16)));
+        flag.setImageDrawable(Ui.flagDe(c));
+        flag.setLayoutParams(new LinearLayout.LayoutParams(Ui.dp(c, 17), Ui.dp(c, 12)));
         cc.addView(flag);
-        TextView plus = Ui.text(c, "  +49 ", 14, Ui.WHITE, false);
+        TextView plus = Ui.text(c, "  +49 ", 11, Ui.WHITE, false);
         cc.addView(plus);
-        ImageView chev = Ui.img(c, R.drawable.ic_chevron_down, 14);
+        ImageView chev = Ui.img(c, R.drawable.ic_chevron_down, 10);
         chev.setColorFilter(0xFFA8A29A);
         cc.addView(chev);
         phoneRow.addView(cc);
 
-        Ui.spacer(c, Ui.dp(c, 8), 1);
+        phoneRow.addView(Ui.spacer(c, Ui.dp(c, 8), 1));
 
         EditText phone = new EditText(c);
         phone.setHint("Phone Number");
         phone.setHintTextColor(0xFF8A867E);
         phone.setTextColor(Ui.WHITE);
-        phone.setTextSize(14);
-        phone.setBackground(Ui.round(0xFF3A3835, 8, c));
+        phone.setTextSize(11);
+        phone.setBackground(Ui.round(0xFF3A3835, 6, c));
         phone.setSingleLine(true);
-        phone.setPadding(Ui.dp(c, 12), 0, Ui.dp(c, 12), 0);
+        phone.setPadding(Ui.dp(c, 10), 0, Ui.dp(c, 10), 0);
         LinearLayout.LayoutParams pp = new LinearLayout.LayoutParams(
                 0, ViewGroup.LayoutParams.MATCH_PARENT, 1f);
         phone.setLayoutParams(pp);
@@ -118,7 +118,7 @@ public class LoginScreen {
         orRow.setGravity(Gravity.CENTER_VERTICAL);
         LinearLayout.LayoutParams orp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        orp.setMargins(Ui.dp(c, 24), Ui.dp(c, 18), Ui.dp(c, 24), Ui.dp(c, 18));
+        orp.setMargins(Ui.dp(c, 24), Ui.dp(c, 10), Ui.dp(c, 24), Ui.dp(c, 10));
         orRow.setLayoutParams(orp);
         View line1 = new View(c);
         line1.setBackgroundColor(0xFF3C3A36);
@@ -136,10 +136,10 @@ public class LoginScreen {
             @Override public View make(android.content.Context ctx) {
                 TextView e = new TextView(ctx);
                 e.setText("✉");
-                e.setTextSize(14);
+                e.setTextSize(11);
                 e.setTextColor(Ui.WHITE);
                 e.setGravity(Gravity.CENTER);
-                e.setBackground(Ui.round(0xFF3E9BDD, 5, ctx));
+                e.setBackground(Ui.round(0xFF3E9BDD, 4, ctx));
                 return e;
             }
         }, new View.OnClickListener() {
@@ -148,7 +148,7 @@ public class LoginScreen {
             }
         }));
 
-        Ui.spacer(c, 1, Ui.dp(c, 10));
+        root.addView(Ui.spacer(c, 1, Ui.dp(c, 10)));
 
         // ---- Continue with Google ----
         root.addView(continueBtn(c, "Continue with Google", new BtnIcon() {
@@ -163,12 +163,12 @@ public class LoginScreen {
             }
         }));
 
-        Ui.spacer(c, 1, Ui.dp(c, 14));
+        root.addView(Ui.spacer(c, 1, Ui.dp(c, 16)));
 
         // ---- Play as Guest ----
-        TextView guest = Ui.text(c, "Play as Guest", 14, Ui.WHITE, true);
+        TextView guest = Ui.text(c, "Play as Guest", 12, Ui.WHITE, true);
         guest.setGravity(Gravity.CENTER);
-        guest.setPadding(0, 0, 0, Ui.dp(c, 20));
+        guest.setPadding(0, 0, 0, Ui.dp(c, 12));
         guest.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) { main.navigate("home"); }
         });
@@ -183,23 +183,23 @@ public class LoginScreen {
                                             BtnIcon iconFactory, View.OnClickListener onClick) {
         LinearLayout b = Ui.linear(c, LinearLayout.HORIZONTAL);
         b.setGravity(Gravity.CENTER_VERTICAL);
-        b.setBackground(Ui.round(0xFF3A3835, 8, c));
+        b.setBackground(Ui.round(0xFF3A3835, 6, c));
         LinearLayout.LayoutParams bp = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 44));
+                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 30));
         bp.setMargins(Ui.dp(c, 24), 0, Ui.dp(c, 24), 0);
         b.setLayoutParams(bp);
-        b.setPadding(Ui.dp(c, 12), 0, Ui.dp(c, 12), 0);
+        b.setPadding(Ui.dp(c, 10), 0, Ui.dp(c, 10), 0);
 
         View icon = iconFactory.make(c);
         LinearLayout.LayoutParams ip = new LinearLayout.LayoutParams(
-                Ui.dp(c, 20), Ui.dp(c, 20));
+                Ui.dp(c, 16), Ui.dp(c, 16));
         icon.setLayoutParams(ip);
         b.addView(icon);
 
-        TextView t = Ui.text(c, label, 14, Ui.WHITE, true);
+        TextView t = Ui.text(c, label, 11, Ui.WHITE, true);
         LinearLayout.LayoutParams tp = new LinearLayout.LayoutParams(
                 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
-        tp.setMargins(Ui.dp(c, 10), 0, 0, 0);
+        tp.setMargins(Ui.dp(c, 8), 0, 0, 0);
         t.setLayoutParams(tp);
         b.addView(t);
 
