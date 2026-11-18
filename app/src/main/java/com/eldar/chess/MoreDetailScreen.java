@@ -694,7 +694,7 @@ public class MoreDetailScreen {
         pg.root.addView(section(c, "About"));
         LinearLayout about = card(c);
         statsRow(c, about, "App", "Chess");
-        statsRow(c, about, "Version", "1.5.0");
+        statsRow(c, about, "Version", "1.5.1");
         statsRow(c, about, "Engine", "chesslib");
         pg.root.addView(about);
         return pg.scroll;
