@@ -81,7 +81,8 @@ public class Ui {
     public static GradientDrawable scrim() {
         GradientDrawable g = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
                 new int[]{0x8C3E3E42, 0x333E3E42, 0x003E3E42, 0x003E3E42});
-        g.setPositions(new float[]{0f, 0.38f, 0.62f, 1f});
+        g.setColors(new int[]{0x8C3E3E42, 0x333E3E42, 0x003E3E42, 0x003E3E42},
+                new float[]{0f, 0.38f, 0.62f, 1f});
         return g;
     }
 

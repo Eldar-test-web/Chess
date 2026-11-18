@@ -32,7 +32,7 @@ public class LearnScreen {
     };
 
     private static final int LOCKED = 0xFF1E4A50;
-    private static final int CURRENT = 0xFF3BA99C;
+    private static final int CURRENT = 0xFF62F6CA;
     private static final int DONE = 0xFF2A7A86;
 
     public static View build(final MainActivity main) {
@@ -79,6 +79,11 @@ public class LearnScreen {
         LinearLayout path = Ui.linear(c, LinearLayout.VERTICAL);
         path.setPadding(Ui.dp(c, 16), Ui.dp(c, 16), Ui.dp(c, 16), Ui.dp(c, 24));
         path.setGravity(Gravity.CENTER_HORIZONTAL);
+        // the glow around the current lesson spills outside its row
+        scroll.setClipChildren(false);
+        scroll.setClipToPadding(false);
+        path.setClipChildren(false);
+        path.setClipToPadding(false);
         scroll.addView(path, new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
@@ -94,21 +99,40 @@ public class LearnScreen {
             row.setGravity(Gravity.CENTER);
             row.setLayoutParams(new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 96)));
+            row.setClipChildren(false);
 
             boolean left = (LESSONS.length - 1 - i) % 2 == 0; // zigzag
             Ui.spacerWeight(c, 1f);
             LinearLayout stack = Ui.linear(c, LinearLayout.VERTICAL);
             stack.setGravity(Gravity.CENTER);
+            stack.setClipChildren(false);
             LinearLayout.LayoutParams sp = new LinearLayout.LayoutParams(
                     0, Ui.dp(c, 96), 2f);
             stack.setLayoutParams(sp);
 
             FrameLayout diamondWrap = new FrameLayout(c);
+            diamondWrap.setClipChildren(false);
+            if (current) {
+                // mint halo bleeding out around the current lesson (screenshot 072013)
+                View glow = new View(c);
+                android.graphics.drawable.GradientDrawable g =
+                        new android.graphics.drawable.GradientDrawable(
+                                android.graphics.drawable.GradientDrawable.Orientation.TL_BR,
+                                new int[]{0x8C62F6CA, 0x2E62F6CA, 0x0062F6CA});
+                g.setGradientType(android.graphics.drawable.GradientDrawable.RADIAL_GRADIENT);
+                g.setGradientRadius(Ui.dp(c, 62));
+                g.setShape(android.graphics.drawable.GradientDrawable.OVAL);
+                glow.setBackground(g);
+                FrameLayout.LayoutParams glp = new FrameLayout.LayoutParams(
+                        Ui.dp(c, 132), Ui.dp(c, 132), Gravity.CENTER);
+                glp.setMargins(-Ui.dp(c, 18), -Ui.dp(c, 18), -Ui.dp(c, 18), -Ui.dp(c, 18));
+                diamondWrap.addView(glow, glp);
+            }
             View diamond = new View(c);
             diamond.setBackground(Ui.round(current ? CURRENT : done ? DONE : LOCKED, 8, c));
             diamond.setRotation(45f);
             diamondWrap.addView(diamond, new FrameLayout.LayoutParams(
-                    Ui.dp(c, 52), Ui.dp(c, 52)));
+                    Ui.dp(c, 52), Ui.dp(c, 52), Gravity.CENTER));
 
             TextView glyph = Ui.text(c, l.glyph, 22, current ? Ui.WHITE : 0xFF8FB7BC, true);
             glyph.setGravity(Gravity.CENTER);
@@ -116,17 +140,46 @@ public class LearnScreen {
                     Ui.dp(c, 52), Ui.dp(c, 52), Gravity.CENTER));
 
             if (current) {
-                TextView next = Ui.text(c, "Next", 12, Ui.WHITE, true);
+                // "Next" tooltip: white bubble, dark text, warm halo, small tail
+                FrameLayout bubbleWrap = new FrameLayout(c);
+                bubbleWrap.setClipChildren(false);
+                View halo = new View(c);
+                android.graphics.drawable.GradientDrawable hg =
+                        new android.graphics.drawable.GradientDrawable(
+                                android.graphics.drawable.GradientDrawable.Orientation.TL_BR,
+                                new int[]{0x55E8E27A, 0x00E8E27A});
+                hg.setGradientType(android.graphics.drawable.GradientDrawable.RADIAL_GRADIENT);
+                hg.setGradientRadius(Ui.dp(c, 46));
+                hg.setShape(android.graphics.drawable.GradientDrawable.OVAL);
+                halo.setBackground(hg);
+                FrameLayout.LayoutParams hlp = new FrameLayout.LayoutParams(
+                        Ui.dp(c, 130), Ui.dp(c, 84), Gravity.CENTER_HORIZONTAL | Gravity.TOP);
+                hlp.setMargins(0, -Ui.dp(c, 16), 0, 0);
+                bubbleWrap.addView(halo, hlp);
+
+                TextView next = Ui.text(c, "Next", 14, 0xFF312E2B, true);
                 next.setGravity(Gravity.CENTER);
-                next.setBackground(Ui.round(0xFF1C1B18, 6, c));
-                next.setPadding(Ui.dp(c, 10), Ui.dp(c, 4), Ui.dp(c, 10), Ui.dp(c, 4));
+                next.setBackground(Ui.round(0xFFF8F8F8, 8, c));
+                next.setPadding(Ui.dp(c, 14), Ui.dp(c, 4), Ui.dp(c, 14), Ui.dp(c, 4));
                 FrameLayout.LayoutParams np = new FrameLayout.LayoutParams(
                         ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
                         Gravity.CENTER_HORIZONTAL | Gravity.TOP);
-                np.setMargins(0, Ui.dp(c, 0), 0, 0);
-                next.setLayoutParams(np);
-                diamondWrap.addView(next);
-                next.setTranslationY(-Ui.dp(c, 14));
+                bubbleWrap.addView(next, np);
+
+                View nextTail = new View(c);
+                nextTail.setBackground(Ui.round(0xFFF8F8F8, 2, c));
+                nextTail.setRotation(45f);
+                FrameLayout.LayoutParams tpp = new FrameLayout.LayoutParams(
+                        Ui.dp(c, 10), Ui.dp(c, 10),
+                        Gravity.CENTER_HORIZONTAL | Gravity.TOP);
+                tpp.setMargins(0, Ui.dp(c, 22), 0, 0);
+                bubbleWrap.addView(nextTail, tpp);
+
+                FrameLayout.LayoutParams bwp = new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
+                        Gravity.CENTER_HORIZONTAL | Gravity.TOP);
+                bwp.setMargins(0, -Ui.dp(c, 12), 0, 0);
+                diamondWrap.addView(bubbleWrap, bwp);
             }
             stack.addView(diamondWrap, new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -149,16 +202,22 @@ public class LearnScreen {
 
         // ---- bottom fixed section ----
         LinearLayout bottom = Ui.linear(c, LinearLayout.VERTICAL);
-        bottom.setBackgroundColor(0xFF1C1B18);
-        bottom.setPadding(Ui.dp(c, 12), Ui.dp(c, 8), Ui.dp(c, 12), Ui.dp(c, 10));
-        bottom.addView(Ui.text(c, "Learn To Play", 16, Ui.WHITE, true));
+        bottom.setBackgroundColor(0xFF242624);
+
+        // teal gradient title band (screenshot 072013)
+        LinearLayout band = Ui.linear(c, LinearLayout.VERTICAL);
+        android.graphics.drawable.GradientDrawable bandBg =
+                new android.graphics.drawable.GradientDrawable(
+                        android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
+                        new int[]{0xFF262421, 0xFF17393F, 0xFF0A4F5D});
+        band.setBackground(bandBg);
+        band.setPadding(Ui.dp(c, 85), Ui.dp(c, 38), Ui.dp(c, 12), Ui.dp(c, 10));
+        band.addView(Ui.text(c, "Learn To Play", 16, Ui.WHITE, true));
+        bottom.addView(band);
 
         LinearLayout actions = Ui.linear(c, LinearLayout.HORIZONTAL);
         actions.setGravity(Gravity.CENTER_VERTICAL);
-        LinearLayout.LayoutParams ap = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        ap.setMargins(0, Ui.dp(c, 8), 0, 0);
-        actions.setLayoutParams(ap);
+        actions.setPadding(Ui.dp(c, 12), Ui.dp(c, 8), Ui.dp(c, 12), Ui.dp(c, 10));
 
         ImageView listBtn = Ui.img(c, R.drawable.ic_list_options, 20);
         listBtn.setColorFilter(0xFFB5B0A8);

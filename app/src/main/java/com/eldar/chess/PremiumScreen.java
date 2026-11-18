@@ -118,37 +118,54 @@ public class PremiumScreen {
         PlanAdapter(MainActivity main) { this.main = main; }
 
         @NonNull @Override public PlanHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            LinearLayout page = Ui.linear(main, LinearLayout.VERTICAL);
+            FrameLayout page = new FrameLayout(main);
             page.setLayoutParams(new ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
             return new PlanHolder(page, main);
         }
 
         @Override public void onBindViewHolder(@NonNull PlanHolder holder, int position) {
-            holder.bind(plans[position]);
+            holder.bind(plans[position], position);
         }
 
         @Override public int getItemCount() { return plans.length; }
     }
 
     static class PlanHolder extends RecyclerView.ViewHolder {
-        LinearLayout page; MainActivity main;
+        FrameLayout page; MainActivity main;
 
-        PlanHolder(LinearLayout page, MainActivity main) {
+        PlanHolder(FrameLayout page, MainActivity main) {
             super(page);
             this.page = page;
             this.main = main;
         }
 
-        void bind(final Plan plan) {
+        void bind(final Plan plan, int position) {
             final android.content.Context c = main;
             page.removeAllViews();
-            page.setGravity(Gravity.CENTER);
+
+            if (position > 0) {
+                // right edge of the previous card peeking in from the left (072307)
+                FrameLayout sliver = new FrameLayout(c);
+                View fill = new View(c);
+                fill.setBackground(Ui.round(0xFF2E2C29, 12, c));
+                sliver.addView(fill, new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                View stroke = new View(c);
+                stroke.setBackground(Ui.roundStroke(0x00000000, 12, plans()[position - 1].border, 2, c));
+                stroke.setAlpha(0.62f);
+                sliver.addView(stroke, new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                FrameLayout.LayoutParams slp = new FrameLayout.LayoutParams(
+                        Ui.dp(c, 33), ViewGroup.LayoutParams.MATCH_PARENT);
+                slp.setMargins(Ui.dp(c, 46), Ui.dp(c, 172), 0, Ui.dp(c, 24));
+                page.addView(sliver, slp);
+            }
 
             LinearLayout cardWrap = Ui.linear(c, LinearLayout.VERTICAL);
-            LinearLayout.LayoutParams cw = new LinearLayout.LayoutParams(
+            FrameLayout.LayoutParams cw = new FrameLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-            cw.setMargins(Ui.dp(c, 40), Ui.dp(c, 40), Ui.dp(c, 12), Ui.dp(c, 30));
+            cw.setMargins(Ui.dp(c, 102), Ui.dp(c, 150), -Ui.dp(c, 4), Ui.dp(c, 24));
             cardWrap.setLayoutParams(cw);
 
             FrameLayout cardArea = new FrameLayout(c);
@@ -165,6 +182,7 @@ public class PremiumScreen {
                     Ui.dp(c, 44), Ui.dp(c, 48), Gravity.CENTER_HORIZONTAL | Gravity.TOP);
             ip.setMargins(0, Ui.dp(c, 22), 0, 0);
             icon.setLayoutParams(ip);
+            icon.setTranslationY(-Ui.dp(c, 24));
             cardArea.addView(icon);
 
             LinearLayout inner = Ui.linear(c, LinearLayout.VERTICAL);

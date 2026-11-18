@@ -188,21 +188,27 @@ public class NewGameScreen {
         boolean passPlay = false;
         switch (kind) {
             case "bots":
-                persona = new GameSession.Persona("Marko", 1123, 2, 90, false);
+                // Marko thinks slowly and rarely grabs material
+                persona = new GameSession.Persona("Marko", 1123, 2, 90,
+                        false, 1600, 3400, 0.22, 0.35);
                 break;
             case "coach":
-                persona = new GameSession.Persona("David", 847, 1, 200, true);
+                persona = new GameSession.Persona("David", 847, 1, 200,
+                        true, 1100, 2400, 0.18, 0.30);
                 break;
             case "passplay":
                 persona = new GameSession.Persona("Friend", main.state.userRating, 0, 0, false);
                 passPlay = true;
                 break;
             default:
-                persona = new GameSession.Persona("codon201100", 1472, 3, 25, false);
+                // quick, grabby online opponent (screenshots 072139 / 072146)
+                persona = new GameSession.Persona("codon201100", 1472, 3, 25,
+                        false, 700, 1500, 0.35, 0.55);
         }
         GameScreen.pendingPersona = persona;
         GameScreen.pendingTime = timeMs;
         GameScreen.pendingPassPlay = passPlay;
+        GameScreen.pendingUserBlack = !passPlay && "online".equals(kind);
         main.navigate("game");
     }
 }

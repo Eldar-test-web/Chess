@@ -27,6 +27,8 @@ public class GameScreen {
     public static GameSession.Persona pendingPersona = null;
     public static long pendingTime = 600000;
     public static boolean pendingPassPlay = false;
+    /** 072139/072146: online games seat the player on the black side */
+    public static boolean pendingUserBlack = false;
 
     private GameSession session;
     private BoardView boardView;
@@ -34,6 +36,8 @@ public class GameScreen {
 
     private TextView opponentClock, userClock, opponentName, userName;
     private ImageView opponentFlag, userFlag;
+    private LinearLayout opponentRow;
+    private ImageView opponentAvatar;
     private HorizontalScrollView moveScroll;
     private LinearLayout moveRow;
     private FrameLayout boardOverlay;
@@ -70,6 +74,7 @@ public class GameScreen {
     private View create() {
         session = new GameSession(pendingPersona, pendingTime);
         session.passAndPlay = pendingPassPlay;
+        session.userIsWhite = !pendingPassPlay && !pendingUserBlack;
         final android.content.Context c = main;
 
         LinearLayout root = Ui.linear(c, LinearLayout.VERTICAL);
@@ -108,24 +113,25 @@ public class GameScreen {
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         // ---------- opponent row ----------
-        LinearLayout oppRow = Ui.linear(c, LinearLayout.HORIZONTAL);
-        oppRow.setGravity(Gravity.CENTER_VERTICAL);
-        oppRow.setPadding(Ui.dp(c, 8), Ui.dp(c, 8), Ui.dp(c, 8), Ui.dp(c, 8));
-        ImageView oppAv = new ImageView(c);
-        oppAv.setImageResource(R.drawable.avatar_grey);
-        oppAv.setBackground(Ui.round(0xFF4A4844, 4, c));
-        oppRow.addView(oppAv, new LinearLayout.LayoutParams(Ui.dp(c, 38), Ui.dp(c, 38)));
+        opponentRow = Ui.linear(c, LinearLayout.HORIZONTAL);
+        opponentRow.setGravity(Gravity.CENTER_VERTICAL);
+        opponentRow.setPadding(Ui.dp(c, 8), Ui.dp(c, 8), Ui.dp(c, 8), Ui.dp(c, 8));
+        opponentAvatar = new ImageView(c);
+        opponentAvatar.setImageResource(R.drawable.avatar_grey);
+        opponentAvatar.setBackground(Ui.round(0xFF4A4844, 4, c));
+        opponentRow.addView(opponentAvatar, new LinearLayout.LayoutParams(
+                Ui.dp(c, 38), Ui.dp(c, 38)));
 
         opponentName = Ui.text(c, "", 14, Ui.WHITE, true);
         LinearLayout.LayoutParams np = new LinearLayout.LayoutParams(
                 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
         np.setMargins(Ui.dp(c, 10), 0, 0, 0);
         opponentName.setLayoutParams(np);
-        oppRow.addView(opponentName);
+        opponentRow.addView(opponentName);
 
         opponentFlag = new ImageView(c);
         opponentFlag.setLayoutParams(new LinearLayout.LayoutParams(Ui.dp(c, 16), Ui.dp(c, 11)));
-        oppRow.addView(opponentFlag);
+        opponentRow.addView(opponentFlag);
 
         opponentClock = Ui.text(c, "10:00", 15, Ui.WHITE, true);
         opponentClock.setGravity(Gravity.CENTER);
@@ -134,24 +140,34 @@ public class GameScreen {
                 Ui.dp(c, 76), Ui.dp(c, 30));
         ocp.setMargins(Ui.dp(c, 8), 0, 0, 0);
         opponentClock.setLayoutParams(ocp);
-        oppRow.addView(opponentClock);
-        root.addView(oppRow);
+        opponentRow.addView(opponentClock);
+        root.addView(opponentRow);
 
         // ---------- coach bubble ----------
         coachBubble = Ui.linear(c, LinearLayout.HORIZONTAL);
         coachBubble.setVisibility(View.GONE);
-        coachBubble.setPadding(Ui.dp(c, 8), Ui.dp(c, 2), Ui.dp(c, 8), Ui.dp(c, 4));
+        coachBubble.setGravity(Gravity.CENTER_VERTICAL);
+        coachBubble.setPadding(Ui.dp(c, 6), Ui.dp(c, 0), Ui.dp(c, 8), Ui.dp(c, 4));
         ImageView coachAv = new ImageView(c);
         coachAv.setImageResource(R.drawable.avatar_coach_bubble);
         coachAv.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        coachBubble.addView(coachAv, new LinearLayout.LayoutParams(Ui.dp(c, 40), Ui.dp(c, 44)));
+        coachBubble.addView(coachAv, new LinearLayout.LayoutParams(
+                Ui.dp(c, 50), Ui.dp(c, 57)));
+        coachAv.setTranslationY(-Ui.dp(c, 14));   // overlaps the name row (072139)
+        View tail = new View(c);
+        tail.setBackground(Ui.round(0xFFC9C6BE, 3, c));
+        tail.setRotation(45f);
+        LinearLayout.LayoutParams tailP = new LinearLayout.LayoutParams(
+                Ui.dp(c, 14), Ui.dp(c, 14));
+        tailP.setMargins(0, 0, -Ui.dp(c, 7), 0);
+        coachBubble.addView(tail, tailP);
         coachText = Ui.text(c, COACH_TIPS[0], 13, 0xFF3B3935, false);
         coachText.setTextColor(0xFF3B3935);
         coachText.setBackground(Ui.round(0xFFC9C6BE, 10, c));
-        coachText.setPadding(Ui.dp(c, 10), Ui.dp(c, 8), Ui.dp(c, 10), Ui.dp(c, 8));
+        coachText.setPadding(Ui.dp(c, 12), Ui.dp(c, 8), Ui.dp(c, 10), Ui.dp(c, 8));
         LinearLayout.LayoutParams bp = new LinearLayout.LayoutParams(
                 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
-        bp.setMargins(Ui.dp(c, 6), 0, Ui.dp(c, 10), 0);
+        bp.setMargins(0, 0, Ui.dp(c, 10), 0);
         coachText.setLayoutParams(bp);
         coachBubble.addView(coachText);
         root.addView(coachBubble);
@@ -161,26 +177,37 @@ public class GameScreen {
         boardView.setListener(new BoardView.Listener() {
             @Override public void onSquareTapped(int file, int rank) { onSquare(file, rank); }
         });
+        boardView.setFlipped(!session.userIsWhite);
         boardView.setLayoutParams(new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
         boardOverlay = new FrameLayout(c);
         boardOverlay.addView(boardView);
 
+        // searching layer (072139): gradient scrim fading down the empty board
         searchDim = Ui.linear(c, LinearLayout.VERTICAL);
-        searchDim.setBackgroundColor(0x88000000);
+        searchDim.setBackground(Ui.scrim());
         ((LinearLayout) searchDim).setGravity(Gravity.CENTER);
         TextView searching = Ui.text(c, "Searching...", 24, Ui.WHITE, true);
         searching.setGravity(Gravity.CENTER);
         ((LinearLayout) searchDim).addView(searching);
+        FrameLayout stopHalo = new FrameLayout(c);
+        stopHalo.setBackground(Ui.round(0x2EFFFFFF, 16, c));
         ImageView stopButton = new ImageView(c);
         stopButton.setImageResource(R.drawable.icon_stopwatch);
         stopButton.setBackground(Ui.round(0xFF2E2C29, 10, c));
-        stopButton.setPadding(Ui.dp(c, 14), Ui.dp(c, 14), Ui.dp(c, 14), Ui.dp(c, 14));
-        LinearLayout.LayoutParams stp = new LinearLayout.LayoutParams(Ui.dp(c, 56), Ui.dp(c, 56));
-        stp.setMargins(0, Ui.dp(c, 16), 0, 0);
-        stopButton.setLayoutParams(stp);
-        ((LinearLayout) searchDim).addView(stopButton);
+        stopButton.setPadding(Ui.dp(c, 12), Ui.dp(c, 12), Ui.dp(c, 12), Ui.dp(c, 12));
+        FrameLayout.LayoutParams sbp = new FrameLayout.LayoutParams(
+                Ui.dp(c, 56), Ui.dp(c, 56), Gravity.CENTER);
+        stopHalo.addView(stopButton, sbp);
+        LinearLayout.LayoutParams stp = new LinearLayout.LayoutParams(
+                Ui.dp(c, 74), Ui.dp(c, 74));
+        stp.setMargins(0, Ui.dp(c, 14), 0, 0);
+        stopHalo.setLayoutParams(stp);
+        stopHalo.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View v) { main.navigate("home"); }
+        });
+        ((LinearLayout) searchDim).addView(stopHalo);
         boardOverlay.addView(searchDim, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         root.addView(boardOverlay, new LinearLayout.LayoutParams(
@@ -294,14 +321,22 @@ public class GameScreen {
         bottomBar.addView(item);
     }
 
+    private static final String EMPTY_BOARD_FEN = "8/8/8/8/8/8/8/8 w - - 0 1";
+
     private void startSearching() {
         showTag("x", View.VISIBLE);
-        boardView.setState(session.board.getFen(), null);
+        // 072139: the board is empty while the opponent is being found
+        boardView.setState(EMPTY_BOARD_FEN, null);
         boardView.setInteractive(false);
         searchDim.setVisibility(View.VISIBLE);
-        if (session.persona != null && session.persona.coach) {
+        setClockStyle(opponentClock, false);
+        setClockStyle(userClock, false);
+        if (session.persona != null && !session.passAndPlay) {
+            // 072139: the coach greeting shows during the search, online included
             coachText.setText(COACH_TIPS[0]);
             coachBubble.setVisibility(View.VISIBLE);
+            coachBubble.setAlpha(0.92f);
+            opponentRow.setAlpha(0.5f);
         }
         handler.postDelayed(new Runnable() {
             @Override public void run() {
@@ -323,11 +358,18 @@ public class GameScreen {
         searchDim.setVisibility(View.GONE);
         showTag("x", View.GONE);
         coachBubble.setVisibility(View.GONE);
+        opponentRow.setAlpha(1f);
         boardView.setInteractive(true);
         refresh();
         lastTick = System.currentTimeMillis();
         running = true;
         handler.postDelayed(tickRunnable, 100);
+        // 072146: in an online game the opponent holds the white pieces
+        // and opens; your clock already ran while the game was setting up
+        if (!session.passAndPlay && session.board.getSideToMove() != session.userSide()) {
+            if (session.userSide() == Side.BLACK) session.clockBlackMs -= 3000;
+            scheduleBotMove(500);
+        }
     }
 
     private final Runnable tickRunnable = new Runnable() {
@@ -345,15 +387,29 @@ public class GameScreen {
     };
 
     private void updateClocks() {
-        boolean whiteActive = session.board.getSideToMove() == Side.WHITE;
-        opponentClock.setText(session.fmtClock(session.clockBlackMs));
-        userClock.setText(session.fmtClock(session.clockWhiteMs));
-        opponentClock.setBackground(Ui.roundStroke(
-                !whiteActive ? 0xFF000000 : 0xFF56534E, 4,
-                !whiteActive ? 0xFFFFFFFF : 0x00000000, 1, main));
-        userClock.setBackground(Ui.roundStroke(
-                whiteActive ? 0xFF000000 : 0xFF56534E, 4,
-                whiteActive ? 0xFFFFFFFF : 0x00000000, 1, main));
+        boolean whiteToMove = session.board.getSideToMove() == Side.WHITE;
+        boolean opponentToMove = whiteToMove == (session.botSide() == Side.WHITE);
+        opponentClock.setText(session.fmtClock(session.clockOf(session.botSide())));
+        userClock.setText(session.fmtClock(session.clockOf(session.userSide())));
+        setClockStyle(opponentClock, opponentToMove);
+        setClockStyle(userClock, !opponentToMove);
+    }
+
+    /** 072146: the side on the move carries the black clock, white ring and ticker icon. */
+    private void setClockStyle(TextView clock, boolean active) {
+        if (active) {
+            clock.setTextColor(Ui.WHITE);
+            clock.setBackground(Ui.roundStroke(0xFF000000, 4, 0xFFFFFFFF, 1.5f, main));
+            android.graphics.drawable.Drawable icon =
+                    main.getResources().getDrawable(R.drawable.icon_clock_small, null);
+            icon.setBounds(0, 0, Ui.dp(main, 12), Ui.dp(main, 14));
+            clock.setCompoundDrawables(icon, null, null, null);
+            clock.setCompoundDrawablePadding(Ui.dp(main, 4));
+        } else {
+            clock.setTextColor(0xFF575553);
+            clock.setBackground(Ui.round(0xFF979695, 4, main));
+            clock.setCompoundDrawables(null, null, null, null);
+        }
     }
 
     private void refresh() {
@@ -406,7 +462,7 @@ public class GameScreen {
             Piece p = session.board.getPiece(Square.valueOf(sq));
             boolean mySide = session.passAndPlay
                     ? p.getPieceSide() == session.board.getSideToMove()
-                    : p.getPieceSide() == Side.WHITE;
+                    : p.getPieceSide() == session.userSide();
             if (p != Piece.NONE && mySide) select(file, rank);
             return;
         }
@@ -427,7 +483,7 @@ public class GameScreen {
             Piece p = session.board.getPiece(Square.valueOf(sq));
             boolean mySide = session.passAndPlay
                     ? p.getPieceSide() == session.board.getSideToMove()
-                    : p.getPieceSide() == Side.WHITE;
+                    : p.getPieceSide() == session.userSide();
             if (p != Piece.NONE && mySide) select(file, rank);
         }
     }
@@ -435,18 +491,23 @@ public class GameScreen {
     private void afterUserMove() {
         if (session.status == GameSession.Status.ENDED) return;
         if (session.passAndPlay) return;
+        scheduleBotMove(250);
+    }
+
+    private void scheduleBotMove(long delayMs) {
         handler.postDelayed(new Runnable() {
             @Override public void run() {
                 if (destroyed || session.status != GameSession.Status.ACTIVE) return;
                 BotPlayer.think(session, new BotPlayer.Callback() {
                     @Override public void onMove(Move m) {
-                        if (destroyed || m == null) return;
+                        if (destroyed || m == null
+                                || session.status != GameSession.Status.ACTIVE) return;
                         session.playMove(m);
                         maybeCoachTip();
                     }
                 });
             }
-        }, 250);
+        }, delayMs);
     }
 
     private void maybeCoachTip() {

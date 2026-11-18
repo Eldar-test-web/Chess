@@ -119,61 +119,52 @@ public class HomeScreen {
             }
             body.addView(cards);
 
-            if (main.state.learnProgress == 0) {
-                // Play Your First Game! banner (from screenshot)
-                ImageView banner = new ImageView(c);
-                banner.setImageResource(R.drawable.first_game);
-                banner.setScaleType(ImageView.ScaleType.FIT_XY);
-                LinearLayout.LayoutParams bp = new LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 176));
-                bp.setMargins(Ui.dp(c, 2), Ui.dp(c, 8), Ui.dp(c, 148), 0);
-                banner.setLayoutParams(bp);
-                banner.setOnClickListener(new View.OnClickListener() {
-                    @Override public void onClick(View v) { main.navigate("newgame"); }
-                });
-                body.addView(banner);
-            }
+            // Play Your First Game! banner - shown in BOTH pre-game states
+            // (071929 new user and 072058 after the learn card moved on)
+            ImageView banner = new ImageView(c);
+            banner.setImageResource(R.drawable.first_game);
+            banner.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            banner.setAdjustViewBounds(true);
+            LinearLayout.LayoutParams bp = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            bp.setMargins(Ui.dp(c, 2), Ui.dp(c, 8), Ui.dp(c, 148), 0);
+            banner.setLayoutParams(bp);
+            banner.setOnClickListener(new View.OnClickListener() {
+                @Override public void onClick(View v) { main.navigate("newgame"); }
+            });
+            body.addView(banner);
         }
 
-        // ---- Friends section ----
-        body.addView(sectionHeader(c, "Friends", null));
-        LinearLayout fr = Ui.linear(c, LinearLayout.HORIZONTAL);
-        LinearLayout.LayoutParams frp = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 118));
-        frp.setMargins(Ui.dp(c, 2), Ui.dp(c, 2), Ui.dp(c, 2), 0);
-        fr.setLayoutParams(frp);
-        fr.addView(iconCard(c, R.drawable.icon_find_friends, "Find Friends",
-                new View.OnClickListener() {
-                    @Override public void onClick(View v) { main.navigate("friends"); }
-                }));
-        Ui.spacer(c, Ui.dp(c, 4), 1);
-        fr.addView(iconCard(c, R.drawable.icon_challenge, "Challenge", new View.OnClickListener() {
-            @Override public void onClick(View v) { main.navigate("newgame"); }
-        }));
-        Ui.spacer(c, Ui.dp(c, 4), 1);
-        fr.addView(iconCard(c, R.drawable.icon_share, "Share Profile", new View.OnClickListener() {
-            @Override public void onClick(View v) {
-                Toast.makeText(c, "Profile link copied!", Toast.LENGTH_SHORT).show();
-            }
-        }));
-        body.addView(fr);
-
-        // ---- Ratings section ----
-        LinearLayout header = sectionHeader(c, "Ratings", played ? "View All" : null);
-        body.addView(header);
-        body.addView(ratingsCard(c, main, played));
+        // section order follows the screenshots: played = Ratings before Friends
+        // (072329), unplayed = Friends before Ratings (071929 / 072058)
+        if (played) {
+            body.addView(ratingsSection(c, main, true));
+            body.addView(friendsSection(c, main));
+        } else {
+            body.addView(friendsSection(c, main));
+            body.addView(ratingsSection(c, main, false));
+        }
 
         // ---- Game History ----
         LinearLayout ghHeader = sectionHeader(c, "Game History", played ? "Accuracy" : null);
-        TextView count = null;
         if (played) {
-            count = Ui.text(c, String.valueOf(main.state.gamesPlayed), 11, Ui.GREY, false);
-            count.setBackground(Ui.round(0xFF3A3835, 8, c));
-            count.setPadding(Ui.dp(c, 7), Ui.dp(c, 1), Ui.dp(c, 7), Ui.dp(c, 1));
+            TextView ghCount = Ui.text(c, String.valueOf(main.state.gamesPlayed), 11,
+                    Ui.WHITE, true);
+            ghCount.setGravity(Gravity.CENTER);
+            ghCount.setBackground(Ui.round(0xFF56534E, 9, c));
+            LinearLayout.LayoutParams gp = new LinearLayout.LayoutParams(
+                    Ui.dp(c, 18), Ui.dp(c, 18));
+            gp.setMargins(Ui.dp(c, 6), 0, 0, 0);
+            ghCount.setLayoutParams(gp);
+            ghHeader.addView(ghCount, 1);
         }
         body.addView(ghHeader);
         if (played) {
             body.addView(historyCard(c, main));
+            TextView viewAll = Ui.text(c, "View All Games", 13, 0xFF726C65, false);
+            viewAll.setGravity(Gravity.CENTER);
+            viewAll.setPadding(0, Ui.dp(c, 8), 0, 0);
+            body.addView(viewAll);
         } else {
             body.addView(emptyHistoryCard(c, main));
         }
@@ -328,18 +319,22 @@ public class HomeScreen {
         go.setLayoutParams(new LinearLayout.LayoutParams(Ui.dp(c, 36), Ui.dp(c, 36)));
         go.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) {
-                GameScreen.pendingPersona = new GameSession.Persona("GustyBattery", 1472, 3, 25, false);
+                GameScreen.pendingPersona = new GameSession.Persona("GustyBattery", 1472, 3, 25,
+                        false, 600, 1400, 0.38, 0.52);
                 GameScreen.pendingTime = 600000;
                 GameScreen.pendingPassPlay = false;
+                GameScreen.pendingUserBlack = true;
                 main.navigate("game");
             }
         });
         card.addView(go);
         card.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) {
-                GameScreen.pendingPersona = new GameSession.Persona("GustyBattery", 1472, 3, 25, false);
+                GameScreen.pendingPersona = new GameSession.Persona("GustyBattery", 1472, 3, 25,
+                        false, 600, 1400, 0.38, 0.52);
                 GameScreen.pendingTime = 600000;
                 GameScreen.pendingPassPlay = false;
+                GameScreen.pendingUserBlack = true;
                 main.navigate("game");
             }
         });
@@ -392,6 +387,41 @@ public class HomeScreen {
         return card;
     }
 
+    private static LinearLayout friendsSection(final android.content.Context c,
+                                               final MainActivity main) {
+        LinearLayout section = Ui.linear(c, LinearLayout.VERTICAL);
+        section.addView(sectionHeader(c, "Friends", null));
+        LinearLayout fr = Ui.linear(c, LinearLayout.HORIZONTAL);
+        LinearLayout.LayoutParams frp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 118));
+        frp.setMargins(Ui.dp(c, 2), Ui.dp(c, 2), Ui.dp(c, 2), 0);
+        fr.setLayoutParams(frp);
+        fr.addView(iconCard(c, R.drawable.icon_find_friends, "Find Friends",
+                new View.OnClickListener() {
+                    @Override public void onClick(View v) { main.navigate("friends"); }
+                }));
+        Ui.spacer(c, Ui.dp(c, 4), 1);
+        fr.addView(iconCard(c, R.drawable.icon_challenge, "Challenge", new View.OnClickListener() {
+            @Override public void onClick(View v) { main.navigate("newgame"); }
+        }));
+        Ui.spacer(c, Ui.dp(c, 4), 1);
+        fr.addView(iconCard(c, R.drawable.icon_share, "Share Profile", new View.OnClickListener() {
+            @Override public void onClick(View v) {
+                Toast.makeText(c, "Profile link copied!", Toast.LENGTH_SHORT).show();
+            }
+        }));
+        section.addView(fr);
+        return section;
+    }
+
+    private static LinearLayout ratingsSection(final android.content.Context c,
+                                               final MainActivity main, boolean played) {
+        LinearLayout section = Ui.linear(c, LinearLayout.VERTICAL);
+        section.addView(sectionHeader(c, "Ratings", played ? "View All" : null));
+        section.addView(ratingsCard(c, main, played));
+        return section;
+    }
+
     private static LinearLayout ratingsCard(final android.content.Context c, final MainActivity main,
                                             boolean played) {
         LinearLayout card = Ui.linear(c, LinearLayout.VERTICAL);
@@ -427,7 +457,10 @@ public class HomeScreen {
             TextView l = Ui.text(c, labels[i], 12, Ui.WHITE, false);
             l.setPadding(0, Ui.dp(c, 4), 0, Ui.dp(c, 1));
             tile.addView(l);
-            tile.addView(Ui.text(c, "-", 12, Ui.WHITE, true));
+            // the dash under each label only appears in the played state (072329)
+            if (played) {
+                tile.addView(Ui.text(c, "-", 12, Ui.WHITE, true));
+            }
             row.addView(tile);
         }
 

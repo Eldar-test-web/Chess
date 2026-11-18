@@ -22,8 +22,9 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout bottomNav;
     private LinearLayout[] navItems = new LinearLayout[5];
     private String[] navLabels = {"Home", "Puzzles", "Learn", "Watch", "More"};
-    private String current = "login";
+    private String current = "splash";
     public GameScreen activeGame = null;
+    private TextView moreBadge;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +45,31 @@ public class MainActivity extends AppCompatActivity {
                 ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(this, 54)));
 
         setContentView(root);
-        navigate("login");
+        showSplash();
+    }
+
+    /** Splash (screenshot 071621): pawn logo centered on the dark canvas. */
+    private void showSplash() {
+        content.removeAllViews();
+        bottomNav.setVisibility(View.GONE);
+
+        FrameLayout splash = new FrameLayout(this);
+        splash.setBackgroundColor(0xFF302D2B);
+        ImageView art = new ImageView(this);
+        art.setImageResource(R.drawable.splash_art);
+        art.setAdjustViewBounds(true);
+        FrameLayout.LayoutParams ap = new FrameLayout.LayoutParams(
+                Ui.dp(this, 200), ViewGroup.LayoutParams.WRAP_CONTENT);
+        ap.gravity = Gravity.CENTER;
+        splash.addView(art, ap);
+        content.addView(splash, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+
+        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(new Runnable() {
+            @Override public void run() {
+                if ("splash".equals(current)) navigate("login");
+            }
+        }, 1400);
     }
 
     public void navigate(String id) {
@@ -78,6 +103,10 @@ public class MainActivity extends AppCompatActivity {
             for (int i = 0; i < navItems.length; i++) {
                 styleNav(navItems[i], navLabels[i].toLowerCase().equals(id));
             }
+            // red "1" badge on More once at least one game was played (072329)
+            if (moreBadge != null) {
+                moreBadge.setVisibility(state.hasPlayed() ? View.VISIBLE : View.GONE);
+            }
         }
     }
 
@@ -108,7 +137,30 @@ public class MainActivity extends AppCompatActivity {
         ImageView icon = new ImageView(this);
         icon.setImageResource(iconRes);
         icon.setLayoutParams(new LinearLayout.LayoutParams(Ui.dp(this, 20), Ui.dp(this, 20)));
-        item.addView(icon);
+
+        FrameLayout iconWrap = new FrameLayout(this);
+        iconWrap.setClipChildren(false);
+        iconWrap.setLayoutParams(new LinearLayout.LayoutParams(
+                Ui.dp(this, 20), Ui.dp(this, 20)));
+        iconWrap.addView(icon);
+        if ("More".equals(label)) {
+            moreBadge = new TextView(this);
+            moreBadge.setText("1");
+            moreBadge.setTextSize(9);
+            moreBadge.setTextColor(0xFFFFFFFF);
+            moreBadge.setTypeface(null, Typeface.BOLD);
+            moreBadge.setGravity(Gravity.CENTER);
+            moreBadge.setBackground(Ui.round(0xFFFA412D, 8, this));
+            FrameLayout.LayoutParams bp = new FrameLayout.LayoutParams(
+                    Ui.dp(this, 15), Ui.dp(this, 15));
+            bp.gravity = Gravity.TOP | Gravity.END;
+            bp.topMargin = -Ui.dp(this, 5);
+            bp.rightMargin = -Ui.dp(this, 7);
+            moreBadge.setLayoutParams(bp);
+            moreBadge.setVisibility(state.hasPlayed() ? View.VISIBLE : View.GONE);
+            iconWrap.addView(moreBadge);
+        }
+        item.addView(iconWrap);
 
         TextView tv = Ui.text(this, label, 10, Ui.WHITE, true);
         tv.setGravity(Gravity.CENTER);

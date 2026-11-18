@@ -118,27 +118,26 @@ public class BoardView extends View {
                 }
             }
         }
-        // coordinates drawn inside edge squares (chess.com style)
+        // coordinates drawn inside edge squares (chess.com style):
+        // file letters always on the bottom row, rank numbers always on the left column
         textPaint.setTextSize(sq * 0.22f);
         for (int col = 0; col < 8; col++) {
             int file = flipped ? 7 - col : col;
-            int rank = flipped ? 0 : 7;
-            int row = flipped ? 7 : 0;
+            int rank = flipped ? 7 : 0;          // rank of the bottom row
             boolean lightSquare = ((file + rank) % 2) == 1;
             String letter = String.valueOf((char) ('a' + file));
             float lx = col * sq + sq - sq * 0.12f;
-            float ly = row * sq + sq - sq * 0.10f;
+            float ly = 7 * sq + sq - sq * 0.10f;
             boolean lastCol = lastMove != null && (lastMove[2] == file && lastMove[3] == rank);
             textPaint.setColor(lastCol ? 0xFF4A4A3A : (lightSquare ? 0x8C739552 : 0x9CEBECD0));
             canvas.drawText(letter, lx, ly, textPaint);
         }
         for (int row = 0; row < 8; row++) {
             int rank = flipped ? row : 7 - row;
-            int col = flipped ? 7 : 0;
-            int file = flipped ? 7 : 0;
+            int file = flipped ? 7 : 0;          // file of the left column
             boolean lightSquare = ((file + rank) % 2) == 1;
             String num = String.valueOf(rank + 1);
-            float lx = col * sq + sq * 0.14f;
+            float lx = sq * 0.14f;
             float ly = row * sq + sq * 0.20f;
             boolean lastRow = lastMove != null && (lastMove[2] == file && lastMove[3] == rank);
             textPaint.setColor(lastRow ? 0xFF4A4A3A : (lightSquare ? 0x8C739552 : 0x9CEBECD0));
