@@ -42,6 +42,13 @@ public class HomeScreen {
         stage.addView(scroll, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
+        View scrim = new View(c);
+        scrim.setBackgroundColor(0xFF262421);
+        FrameLayout.LayoutParams scp = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 46));
+        scp.gravity = Gravity.BOTTOM;
+        stage.addView(scrim, scp);
+
         TextView play = Ui.text(c, "Play", 13, Ui.WHITE, true);
         play.setGravity(Gravity.CENTER);
         play.setBackground(Ui.greenFill(c, 5.5f));

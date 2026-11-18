@@ -43,7 +43,7 @@ public class WatchScreen {
 
         // ---- Events card ----
         LinearLayout events = Ui.linear(c, LinearLayout.VERTICAL);
-        events.setBackground(Ui.round(0xFF1C1A1A, 7, c));
+        events.setBackground(Ui.round(0xFF1E1D1B, 7, c));
         events.setPadding(Ui.dp(c, 10), Ui.dp(c, 10), Ui.dp(c, 11), Ui.dp(c, 5));
         body.addView(events, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -73,7 +73,7 @@ public class WatchScreen {
 
         // ---- News card ----
         LinearLayout news = Ui.linear(c, LinearLayout.VERTICAL);
-        news.setBackground(Ui.round(0xFF1C1A1A, 7, c));
+        news.setBackground(Ui.round(0xFF242220, 7, c));
         news.setPadding(Ui.dp(c, 10), Ui.dp(c, 4), Ui.dp(c, 11), Ui.dp(c, 10));
         LinearLayout.LayoutParams np = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -100,7 +100,7 @@ public class WatchScreen {
         photo.setImageResource(R.drawable.news_photo);
         photo.setScaleType(ImageView.ScaleType.FIT_XY);
         float cardW = c.getResources().getDisplayMetrics().widthPixels
-                / c.getResources().getDisplayMetrics().density - 35 - 33 - 10 - 11;
+                / c.getResources().getDisplayMetrics().density - 35 - 33;
         LinearLayout.LayoutParams php = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, (int) (cardW * 0.5636f)));
         php.setMargins(-Ui.dp(c, 10), Ui.dp(c, 4), -Ui.dp(c, 11), 0);
@@ -150,12 +150,12 @@ public class WatchScreen {
         ImageView logo = new ImageView(c);
         logo.setImageResource(logoRes);
         logo.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        row.addView(logo, new LinearLayout.LayoutParams(Ui.dp(c, 47), Ui.dp(c, 28.7f)));
+        row.addView(logo, new LinearLayout.LayoutParams(Ui.dp(c, 49), Ui.dp(c, 28.7f)));
 
         LinearLayout info = Ui.linear(c, LinearLayout.VERTICAL);
         LinearLayout.LayoutParams ip = new LinearLayout.LayoutParams(
                 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
-        ip.setMargins(Ui.dp(c, 11), 0, 0, 0);
+        ip.setMargins(Ui.dp(c, 9), 0, 0, 0);
         info.setLayoutParams(ip);
         TextView t = Ui.text(c, title, 10, Ui.WHITE, true);
         t.setIncludeFontPadding(false);

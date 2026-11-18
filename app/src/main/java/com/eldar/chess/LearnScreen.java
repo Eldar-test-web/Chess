@@ -61,7 +61,7 @@ public class LearnScreen {
         FrameLayout.LayoutParams bp = new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT,
                 Gravity.TOP);
-        bp.leftMargin = Ui.dp(c, 65);
+        bp.leftMargin = Ui.dp(c, 71);
         bp.rightMargin = Ui.dp(c, 26);
         bp.topMargin = Ui.dp(c, 19);
         area.addView(bubble, bp);
@@ -77,7 +77,7 @@ public class LearnScreen {
         FrameLayout.LayoutParams btp = new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
                 Gravity.START | Gravity.CENTER_VERTICAL);
-        btp.leftMargin = Ui.dp(c, 39);
+        btp.leftMargin = Ui.dp(c, 55);
         band.addView(bandText, btp);
         root.addView(band, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 44)));
