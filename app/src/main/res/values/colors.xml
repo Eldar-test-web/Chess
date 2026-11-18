@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Chess.com dark palette -->
+    <color name="bg">#262421</color>
+    <color name="bgDark">#1C1B18</color>
+    <color name="card">#3B3935</color>
+    <color name="cardDark">#302E2B</color>
+    <color name="cardLighter">#454340</color>
+    <color name="green">#81B64C</color>
+    <color name="greenDark">#5D9948</color>
+    <color name="greenPressed">#6EA13F</color>
+    <color name="blue">#4193CF</color>
+    <color name="blueBright">#3EA3E0</color>
+    <color name="textPrimary">#FFFFFF</color>
+    <color name="textSecondary">#A8A29A</color>
+    <color name="textFaint">#726C65</color>
+    <color name="boardLight">#EBECD0</color>
+    <color name="boardDark">#739552</color>
+    <color name="highlight">#F2EC65</color>
+    <color name="selected">#BACBA3</color>
+    <color name="chip">#403D39</color>
+    <color name="chipLight">#56534E</color>
+</resources>

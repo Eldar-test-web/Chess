@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@color/bg</item>
+        <item name="android:statusBarColor">@color/bgDark</item>
+        <item name="android:navigationBarColor">@color/bgDark</item>
+        <item name="colorAccent">@color/green</item>
+    </style>
+
+    <style name="DarkDialog" parent="Theme.AppCompat.Dialog.Alert">
+        <item name="android:windowBackground">@drawable/dialog_bg</item>
+        <item name="colorAccent">#81B64C</item>
+        <item name="android:textColorPrimary">#FFFFFF</item>
+    </style>
+</resources>
