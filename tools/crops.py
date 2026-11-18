@@ -78,6 +78,8 @@ CROPS = {
     "icon_play_online": ("Screenshot 2026-11-18 071939.png", 146, 708, 174, 734),
     "icon_play_bots":   ("Screenshot 2026-11-18 071939.png", 146, 756, 174, 782),
     "icon_play_coach":  ("Screenshot 2026-11-18 071939.png", 146, 801, 174, 827),
+    # splash (071621)
+    "splash_art":   ("Screenshot 2026-11-18 071621.png", 189, 118, 464, 347),
 }
 
 files = {}

@@ -24,9 +24,20 @@ public class GameSession {
     public static class Persona {
         public String name; public int rating; public int depth; public int jitter;
         public boolean coach;
-        public Persona(String name, int rating, int depth, int jitter, boolean coach) {
+        /** human-like pacing + style, per persona */
+        public long delayMinMs, delayMaxMs;   // "thinking" speed: fast or slow per character
+        public double aggro;                  // appetite to grab the player's pieces
+        public double defend;                 // willingness to defend a mating attack
+        public Persona(String name, int rating, int depth, int jitter, boolean coach,
+                       long delayMinMs, long delayMaxMs, double aggro, double defend) {
             this.name = name; this.rating = rating; this.depth = depth;
             this.jitter = jitter; this.coach = coach;
+            this.delayMinMs = delayMinMs; this.delayMaxMs = delayMaxMs;
+            this.aggro = aggro; this.defend = defend;
+        }
+
+        public Persona(String name, int rating, int depth, int jitter, boolean coach) {
+            this(name, rating, depth, jitter, coach, 180, 400, 0.25, 0.5);
         }
     }
 
@@ -37,6 +48,10 @@ public class GameSession {
 
     /** pass & play: both sides are local humans */
     public boolean passAndPlay = false;
+
+    /** screenshots 072139/072146: the player sits at the bottom with the black pieces,
+     *  the opponent (white) is the one found by "searching" and moves first. */
+    public boolean userIsWhite = true;
 
     public long clockWhiteMs = 600000;
     public long clockBlackMs = 600000;
@@ -59,11 +74,15 @@ public class GameSession {
         this.clockBlackMs = timeMs;
     }
 
+    public Side userSide() { return userIsWhite ? Side.WHITE : Side.BLACK; }
+    public Side botSide() { return userIsWhite ? Side.BLACK : Side.WHITE; }
+    public long clockOf(Side s) { return s == Side.WHITE ? clockWhiteMs : clockBlackMs; }
+
     public boolean humanTurn() {
         if (status != Status.ACTIVE) return false;
         if (viewIndex != -1) return false;
         if (passAndPlay) return true;
-        return board.getSideToMove() == Side.WHITE;
+        return board.getSideToMove() == userSide();
     }
 
     public boolean inViewPast() { return viewIndex != -1; }
@@ -182,7 +201,7 @@ public class GameSession {
 
     public void checkGameEnd() {
         if (board.isMated()) {
-            boolean humanMated = board.getSideToMove() == Side.WHITE; // human is white
+            boolean humanMated = board.getSideToMove() == userSide();
             finish(humanMated ? Result.LOSS : Result.WIN, "Checkmate");
         } else if (board.isDraw() || board.isStaleMate() || board.isInsufficientMaterial()) {
             finish(Result.DRAW, board.isStaleMate() ? "Stalemate" : "Draw");
@@ -190,7 +209,8 @@ public class GameSession {
     }
 
     public void flagFall(boolean whiteRanOut) {
-        if (whiteRanOut) finish(Result.LOSS, "You ran out of time");
+        boolean userRanOut = (whiteRanOut == userIsWhite);
+        if (userRanOut) finish(Result.LOSS, "You ran out of time");
         else finish(Result.WIN, "Opponent ran out of time");
     }
 
