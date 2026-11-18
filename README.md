@@ -48,3 +48,17 @@ gradle assembleDebug
 ![login](screenshots/Screenshot%202026-11-18%20071700.png)
 ![home](screenshots/Screenshot%202026-11-18%20071929.png)
 ![game](screenshots/Screenshot%202026-11-18%20072146.png)
+
+## Full screenshot gallery (the source of every pixel)
+
+| | |
+|---|---|
+| ![login](screenshots/Screenshot%202026-11-18%20071700.png) | ![home](screenshots/Screenshot%202026-11-18%20071929.png) |
+| ![home-scrolled](screenshots/Screenshot%202026-11-18%20071939.png) | ![home-puzzles](screenshots/Screenshot%202026-11-18%20072329.png) |
+| ![learn](screenshots/Screenshot%202026-11-18%20072013.png) | ![watch](screenshots/Screenshot%202026-11-18%20072021.png) |
+| ![more1](screenshots/Screenshot%202026-11-18%20072029.png) | ![more2](screenshots/Screenshot%202026-11-18%20072038.png) |
+| ![newgame](screenshots/Screenshot%202026-11-18%20072117.png) | ![newgame-expanded](screenshots/Screenshot%202026-11-18%20072125.png) |
+| ![searching](screenshots/Screenshot%202026-11-18%20072139.png) | ![game](screenshots/Screenshot%202026-11-18%20072146.png) |
+| ![friends](screenshots/Screenshot%202026-11-18%20072242.png) | ![premium-diamond](screenshots/Screenshot%202026-11-18%20072258.png) |
+| ![premium-platinum](screenshots/Screenshot%202026-11-18%20072307.png) | ![premium-gold](screenshots/Screenshot%202026-11-18%20072315.png) |
+| ![premium-ff](screenshots/Screenshot%202026-11-18%20072320.png) | ![app-icon](screenshots/Screenshot%202026-11-18%20071621.png) |
