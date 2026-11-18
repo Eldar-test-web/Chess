@@ -51,6 +51,25 @@ public class PuzzlesScreen {
         return queueIndex % queue.size();
     }
 
+    /** Current queue position clamped to the last puzzle (never wraps back to the start). */
+    static int currentIndex() {
+        ensureQueue();
+        return Math.max(0, Math.min(queueIndex, queue.size() - 1));
+    }
+
+    /** True only once every puzzle in the queue has been solved. */
+    static boolean allSolved() {
+        ensureQueue();
+        return queueIndex >= queue.size();
+    }
+
+    /** Move the queue to an already unlocked puzzle so a completed path tile can reopen it. */
+    static void jumpTo(int index) {
+        ensureQueue();
+        if (queue.isEmpty()) return;
+        queueIndex = Math.max(0, Math.min(queue.size() - 1, index));
+    }
+
     static int totalPuzzles() {
         ensureQueue();
         return queue.size();
@@ -101,9 +120,17 @@ public class PuzzlesScreen {
 
         LinearLayout titleRow = Ui.linear(c, LinearLayout.HORIZONTAL);
         titleRow.setGravity(Gravity.CENTER_VERTICAL);
-        TextView tIcon = Ui.glyph(c, "extension", 20, Ui.GREEN);
-        titleRow.addView(tIcon, new LinearLayout.LayoutParams(Ui.dp(c, 22), Ui.dp(c, 24)));
-        titleRow.addView(Ui.text(c, " Puzzles", 18.5f, Ui.WHITE, true));
+        TextView tIcon = Ui.glyph(c, "extension", 22, 0xFFC79A55);
+        LinearLayout.LayoutParams ilp = new LinearLayout.LayoutParams(
+                Ui.dp(c, 30), Ui.dp(c, 30));
+        titleRow.addView(tIcon, ilp);
+        TextView tTitle = Ui.text(c, "Puzzles", 18.5f, Ui.WHITE, true);
+        tTitle.setIncludeFontPadding(false);
+        LinearLayout.LayoutParams ttlp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        ttlp.setMargins(Ui.dp(c, 4), 0, 0, 0);
+        tTitle.setLayoutParams(ttlp);
+        titleRow.addView(tTitle);
         FrameLayout.LayoutParams tlp = new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
                 Gravity.CENTER);
@@ -147,7 +174,10 @@ public class PuzzlesScreen {
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         subLp.setMargins(0, Ui.dp(c, 2), 0, 0);
         TextView sub = Ui.text(c, "Find the best move for White. Theme: " + pz.theme + ".",
-                12, 0xFF5E5952, false);
+                11.5f, 0xFF5E5952, false);
+        sub.setMaxLines(4);
+        sub.setLineSpacing(Ui.dp(c, 0.5f), 1f);
+        sub.setIncludeFontPadding(false);
         bubble.addView(sub, subLp);
         coachRow.addView(bubble);
         root.addView(coachRow);
@@ -252,9 +282,9 @@ public class PuzzlesScreen {
         // ---- controls: Hint / Back / Forward ----
         LinearLayout controls = Ui.linear(c, LinearLayout.HORIZONTAL);
         controls.setBackgroundColor(Ui.BG_DARK);
-        controls.setPadding(Ui.dp(c, 10), Ui.dp(c, 8), Ui.dp(c, 10), Ui.dp(c, 10));
+        controls.setPadding(Ui.dp(c, 10), Ui.dp(c, 7), Ui.dp(c, 10), Ui.dp(c, 8));
         LinearLayout.LayoutParams cLp = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 56), 0f);
+                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 52), 0f);
         controls.setLayoutParams(cLp);
 
         controls.addView(control(c, "lightbulb", "Hint", false, new View.OnClickListener() {

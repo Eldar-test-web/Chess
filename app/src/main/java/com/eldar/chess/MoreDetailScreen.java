@@ -133,15 +133,24 @@ public class MoreDetailScreen {
         pg.scroll.addView(pg.root, new ScrollView.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
-        LinearLayout head = Ui.linear(c, LinearLayout.HORIZONTAL);
-        head.setGravity(Gravity.CENTER_VERTICAL);
+        FrameLayout head = new FrameLayout(c);
+        head.setLayoutParams(new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         TextView backBtn = Ui.glyph(c, "arrow_back", 21, Ui.WHITE);
         backBtn.setPadding(Ui.dp(c, 2), Ui.dp(c, 8), Ui.dp(c, 12), Ui.dp(c, 8));
         backBtn.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) { back(main); }
         });
-        head.addView(backBtn);
-        head.addView(Ui.text(c, title, 20, Ui.WHITE, true));
+        head.addView(backBtn, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.START | Gravity.CENTER_VERTICAL));
+        TextView titleView = Ui.text(c, title, 20, Ui.WHITE, true);
+        titleView.setGravity(Gravity.CENTER);
+        FrameLayout.LayoutParams tlp = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.CENTER);
+        tlp.setMargins(Ui.dp(c, 44), 0, Ui.dp(c, 44), 0);
+        head.addView(titleView, tlp);
         pg.root.addView(head);
         return pg;
     }
@@ -178,7 +187,8 @@ public class MoreDetailScreen {
         TextView b = Ui.text(c, label, 15, Ui.WHITE, true);
         b.setGravity(Gravity.CENTER);
         b.setBackground(primary ? Ui.greenFill(c, 9) : Ui.round(0xFF43403B, 9, c));
-        b.setPadding(Ui.dp(c, 10), Ui.dp(c, 12), Ui.dp(c, 10), Ui.dp(c, 12));
+        int vpad = Ui.dp(c, primary ? 10 : 12);
+        b.setPadding(Ui.dp(c, 10), vpad, Ui.dp(c, 10), vpad);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         lp.topMargin = Ui.dp(c, 12);
@@ -684,7 +694,7 @@ public class MoreDetailScreen {
         pg.root.addView(section(c, "About"));
         LinearLayout about = card(c);
         statsRow(c, about, "App", "Chess");
-        statsRow(c, about, "Version", "1.4.0");
+        statsRow(c, about, "Version", "1.5.0");
         statsRow(c, about, "Engine", "chesslib");
         pg.root.addView(about);
         return pg.scroll;

@@ -66,7 +66,16 @@ public class PremiumScreen {
     }
 
     public static View build(final MainActivity main) {
-        final android.content.Context c = main;
+        // this screen is a pixel-locked replica of the real paywall; render it at
+        // design font scale so the absolute positions stay exact
+        android.content.Context fit = main;
+        try {
+            android.content.res.Configuration cfg =
+                    new android.content.res.Configuration(main.getResources().getConfiguration());
+            cfg.fontScale = 1f;
+            fit = main.createConfigurationContext(cfg);
+        } catch (Exception ignored) { }
+        final android.content.Context c = fit;
 
         LinearLayout root = Ui.linear(c, LinearLayout.VERTICAL);
         root.setBackgroundColor(Ui.BG);
@@ -94,7 +103,7 @@ public class PremiumScreen {
         });
 
         final ViewPager2 pager = new ViewPager2(c);
-        pager.setAdapter(new PlanAdapter(main));
+        pager.setAdapter(new PlanAdapter(main, fit));
         pager.setClipToPadding(false);
         root.addView(pager, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
@@ -135,16 +144,20 @@ public class PremiumScreen {
 
     static class PlanAdapter extends RecyclerView.Adapter<PlanHolder> {
         MainActivity main;
+        android.content.Context ui;
         Plan[] plans = plans();
 
-        PlanAdapter(MainActivity main) { this.main = main; }
+        PlanAdapter(MainActivity main, android.content.Context ui) {
+            this.main = main;
+            this.ui = ui;
+        }
 
         @NonNull @Override public PlanHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            FrameLayout page = new FrameLayout(main);
+            FrameLayout page = new FrameLayout(ui);
             page.setLayoutParams(new ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
             page.setClipChildren(false);
-            return new PlanHolder(page, main);
+            return new PlanHolder(page, main, ui);
         }
 
         @Override public void onBindViewHolder(@NonNull PlanHolder holder, int position) {
@@ -155,16 +168,17 @@ public class PremiumScreen {
     }
 
     static class PlanHolder extends RecyclerView.ViewHolder {
-        FrameLayout page; MainActivity main;
+        FrameLayout page; MainActivity main; android.content.Context ui;
 
-        PlanHolder(FrameLayout page, MainActivity main) {
+        PlanHolder(FrameLayout page, MainActivity main, android.content.Context ui) {
             super(page);
             this.page = page;
             this.main = main;
+            this.ui = ui;
         }
 
         void bind(final Plan plan, int position, Plan[] all) {
-            final android.content.Context c = main;
+            final android.content.Context c = ui;
             page.removeAllViews();
 
             if (position > 0) {

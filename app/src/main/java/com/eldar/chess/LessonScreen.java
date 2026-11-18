@@ -5,6 +5,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,6 +36,7 @@ public class LessonScreen {
 
         LinearLayout root = Ui.linear(c, LinearLayout.VERTICAL);
         root.setBackgroundColor(0xFF262421);
+        LinearLayout content = Ui.linear(c, LinearLayout.VERTICAL);
 
         // ---- header ----
         LinearLayout top = Ui.linear(c, LinearLayout.HORIZONTAL);
@@ -56,7 +58,7 @@ public class LessonScreen {
         top.addView(title);
         top.addView(Ui.text(c, "Lesson " + (idx + 1) + "/" + lessons.size(), 13,
                 0xFFA19D96, false));
-        root.addView(top);
+        content.addView(top);
 
         // ---- coach bubble ----
         LinearLayout coachRow = Ui.linear(c, LinearLayout.HORIZONTAL);
@@ -76,15 +78,14 @@ public class LessonScreen {
                 ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
         bp.setMargins(Ui.dp(c, 8), 0, 0, 0);
         coachRow.addView(bubble, bp);
-        root.addView(coachRow);
+        content.addView(coachRow);
 
         // ---- board ----
         final BoardView board = new BoardView(c);
         board.setState(lesson.fen, null);
         board.setLayoutParams(new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        root.addView(board);
-        root.addView(Ui.spacerWeight(c, 1f));
+        content.addView(board);
 
         // visual hint: dot the legal targets of the lesson piece
         hintTargets(board, lesson);
@@ -137,6 +138,13 @@ public class LessonScreen {
             }
         });
         bottom.addView(next);
+        ScrollView scroll = new ScrollView(c);
+        scroll.setFillViewport(true);
+        scroll.setBackgroundColor(0xFF262421);
+        scroll.addView(content, new ScrollView.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        root.addView(scroll, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
         root.addView(bottom);
 
         board.setListener(new BoardView.Listener() {
