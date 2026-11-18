@@ -1,5 +1,7 @@
 package com.eldar.chess;
 
+import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -17,6 +19,16 @@ import androidx.appcompat.app.AppCompatActivity;
 public class MainActivity extends AppCompatActivity {
 
     public AppState state = new AppState();
+
+    /** Global text scale: everything is ~1.6x bigger than the stock sizes. */
+    public static final float TEXT_SCALE = 1.6f;
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        Configuration conf = new Configuration(newBase.getResources().getConfiguration());
+        conf.fontScale = TEXT_SCALE;
+        super.attachBaseContext(newBase.createConfigurationContext(conf));
+    }
 
     private FrameLayout content;
     private LinearLayout bottomNav;
@@ -54,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
 
         bottomNav = buildBottomNav();
         root.addView(bottomNav, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(this, 62)));
+                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(this, 72)));
 
         setContentView(root);
         showSplash();
@@ -103,7 +115,9 @@ public class MainActivity extends AppCompatActivity {
             case "more": v = MoreScreen.build(this); break;
             case "premium": v = PremiumScreen.build(this); break;
             case "friends": v = FriendsScreen.build(this); break;
-            case "puzzles": v = PuzzlesScreen.build(this); break;
+            case "puzzles": v = PuzzlesHubScreen.build(this); break;
+            case "puzzlesolve": v = PuzzlesScreen.build(this); break;
+            case "moredetail": v = MoreDetailScreen.build(this); break;
             default: v = new View(this);
         }
         content.addView(v, new FrameLayout.LayoutParams(
@@ -158,23 +172,23 @@ public class MainActivity extends AppCompatActivity {
         FrameLayout iconWrap = new FrameLayout(this);
         iconWrap.setClipChildren(false);
         iconWrap.setLayoutParams(new LinearLayout.LayoutParams(
-                Ui.dp(this, 25), Ui.dp(this, 25)));
+                Ui.dp(this, 29), Ui.dp(this, 29)));
         iconWrap.addView(icon, new FrameLayout.LayoutParams(
-                Ui.dp(this, 25), Ui.dp(this, 25), Gravity.CENTER));
+                Ui.dp(this, 29), Ui.dp(this, 29), Gravity.CENTER));
         if ("More".equals(label)) {
             moreBadge = new TextView(this);
             moreBadge.setText("1");
-            moreBadge.setTextSize(8);
+            moreBadge.setTextSize(9.5f);
             moreBadge.setTextColor(0xFFFFFFFF);
             moreBadge.setTypeface(null, Typeface.BOLD);
             moreBadge.setGravity(Gravity.CENTER);
             moreBadge.setIncludeFontPadding(false);
-            moreBadge.setBackground(Ui.round(0xFFFA412D, 5, this));
+            moreBadge.setBackground(Ui.round(0xFFFA412D, 6, this));
             FrameLayout.LayoutParams bp = new FrameLayout.LayoutParams(
-                    Ui.dp(this, 13), Ui.dp(this, 13));
+                    Ui.dp(this, 17), Ui.dp(this, 17));
             bp.gravity = Gravity.TOP | Gravity.END;
-            bp.topMargin = -Ui.dp(this, 6);
-            bp.rightMargin = -Ui.dp(this, 6);
+            bp.topMargin = -Ui.dp(this, 7);
+            bp.rightMargin = -Ui.dp(this, 7);
             moreBadge.setLayoutParams(bp);
             moreBadge.setVisibility(state.hasPlayed() ? View.VISIBLE : View.GONE);
             iconWrap.addView(moreBadge);
@@ -185,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
         tv.setGravity(Gravity.CENTER);
         LinearLayout.LayoutParams tp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        tp.setMargins(0, Ui.dp(this, 3), 0, 0);
+        tp.setMargins(0, Ui.dp(this, 4), 0, 0);
         tv.setLayoutParams(tp);
         item.addView(tv);
 
@@ -218,9 +232,11 @@ public class MainActivity extends AppCompatActivity {
             case "home": finish(); break;
             case "newgame": case "premium": case "friends": navigate("home"); break;
             case "learn": case "watch": case "puzzles": navigate("home"); break;
+            case "puzzlesolve": navigate("puzzles"); break;
             case "lesson": navigate("learn"); break;
             case "game": if (activeGame != null) activeGame.onBackPressed(); break;
             case "more": navigate("home"); break;
+            case "moredetail": MoreDetailScreen.back(this); break;
             default: navigate("home");
         }
     }

@@ -82,8 +82,9 @@ public class LessonScreen {
         final BoardView board = new BoardView(c);
         board.setState(lesson.fen, null);
         board.setLayoutParams(new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         root.addView(board);
+        root.addView(Ui.spacerWeight(c, 1f));
 
         // visual hint: dot the legal targets of the lesson piece
         hintTargets(board, lesson);

@@ -21,6 +21,13 @@ public class AppState {
     public String lastOpponent = "";
     public String lastResult = "";
     public String lastAccuracy = "";
+    public String playerName = "Eldar";
+
+    // live UI settings (read directly by BoardView)
+    public static int theme = 0;
+    public static boolean coords = true;
+    public static boolean dots = true;
+    public static boolean sound = true;
 
     public void load(Context c) {
         SharedPreferences p = c.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
@@ -37,6 +44,11 @@ public class AppState {
         lastOpponent = p.getString("lopp", "");
         lastResult = p.getString("lres", "");
         lastAccuracy = p.getString("lacc", "");
+        playerName = p.getString("pname", "Eldar");
+        theme = p.getInt("theme", 0);
+        coords = p.getBoolean("coords", true);
+        dots = p.getBoolean("dots", true);
+        sound = p.getBoolean("sound", true);
         // one-time seed of a strong club-player profile (not superhuman ratings)
         if (!p.getBoolean("seeded", false)) {
             gamesPlayed = Math.max(gamesPlayed, 1287);
@@ -74,6 +86,11 @@ public class AppState {
                 .putString("lopp", lastOpponent)
                 .putString("lres", lastResult)
                 .putString("lacc", lastAccuracy)
+                .putString("pname", playerName)
+                .putInt("theme", theme)
+                .putBoolean("coords", coords)
+                .putBoolean("dots", dots)
+                .putBoolean("sound", sound)
                 .apply();
     }
 

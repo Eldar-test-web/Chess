@@ -24,9 +24,12 @@ public class BoardView extends View {
         void onSquareTapped(int file, int rank);
     }
 
-    private static final int LIGHT = 0xFFEEEED2;
-    private static final int DARK = 0xFF769656;
-    private static final int HIGHLIGHT = 0xFFF7F783;
+    private static final int[][] PALETTES = {
+            {0xFFEEEED2, 0xFF769656, 0xFFF7F783},   // chess.com green
+            {0xFFEED9B0, 0xFFB58863, 0xFFF6F669},   // wood
+            {0xFFD6E0E9, 0xFF7D9BB8, 0xFFF4F26B},   // blue
+            {0xFFE9E9E7, 0xFF8A8A87, 0xFFF5F078},   // grey
+    };
     private static final int SELECT_OVER = 0x88DDD98A;
     private static final int DOT = 0x66000000;
 
@@ -86,6 +89,8 @@ public class BoardView extends View {
         if (sqw <= 0 || sqh <= 0) return;
         int boardY = boardTop();
         String[] rows = parseFen(fen);
+        int[] pal = PALETTES[Math.max(0, Math.min(3, AppState.theme))];
+        int light = pal[0], dark = pal[1], highlight = pal[2];
 
         for (int row = 0; row < 8; row++) {          // row 0 = top
             for (int col = 0; col < 8; col++) {      // col 0 = left
@@ -93,8 +98,8 @@ public class BoardView extends View {
                 int rank = flipped ? row : 7 - row;
                 boolean lightSquare = ((file + rank) % 2) == 1;
                 int x = col * sqw, y = boardY + row * sqh;
-                int color = lightSquare ? LIGHT : DARK;
-                if (lastMove != null && isLast(file, rank)) color = HIGHLIGHT;
+                int color = lightSquare ? light : dark;
+                if (lastMove != null && isLast(file, rank)) color = highlight;
                 if (selected != null && selected[0] == file && selected[1] == rank) {
                     paint.setColor(color);
                     canvas.drawRect(x, y, x + sqw, y + sqh, paint);
@@ -104,7 +109,7 @@ public class BoardView extends View {
                     paint.setColor(color);
                     canvas.drawRect(x, y, x + sqw, y + sqh, paint);
                 }
-                if (targets.contains(key(file, rank))) {
+                if (AppState.dots && targets.contains(key(file, rank))) {
                     String pcHere = rows[7 - rank].charAt(file) == '.' ? null
                             : String.valueOf(rows[7 - rank].charAt(file));
                     paint.setColor(DOT);
@@ -132,7 +137,7 @@ public class BoardView extends View {
         }
         // coordinates drawn inside edge squares (chess.com style):
         // file letters always on the bottom row, rank numbers always on the left column
-        if (!coords) return;
+        if (!coords || !AppState.coords) return;
         textPaint.setTextSize(sqw * 0.22f);
         for (int col = 0; col < 8; col++) {
             int file = flipped ? 7 - col : col;

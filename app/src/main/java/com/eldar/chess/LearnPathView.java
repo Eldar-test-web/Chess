@@ -335,18 +335,18 @@ public class LearnPathView extends View {
         rect.set(cx - dp(6), t - dp(1.7f), cx + dp(6), t + dp(1.7f));
         cv.drawRoundRect(rect, dp(0.8f), dp(0.8f), solid);
         // Next pill
-        float pw = dp(70), ph = dp(29), py = cy - dp(72);
+        float pw = dp(94), ph = dp(40), py = cy - dp(82);
         solid.setColor(0xFFF8F8F8);
         rect.set(cx - pw / 2, py - ph / 2, cx + pw / 2, py + ph / 2);
-        cv.drawRoundRect(rect, dp(7), dp(7), solid);
+        cv.drawRoundRect(rect, dp(9), dp(9), solid);
         // tail
         cv.save();
         cv.rotate(45f, cx, py + ph / 2 + dp(2));
-        cv.drawRect(cx - dp(5), py + ph / 2 - dp(7), cx + dp(5), py + ph / 2 + dp(2), solid);
+        cv.drawRect(cx - dp(7), py + ph / 2 - dp(9), cx + dp(7), py + ph / 2 + dp(3), solid);
         cv.restore();
         // label
         text.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
-        text.setTextSize(dp(13));
+        text.setTextSize(dp(18.5f));
         text.setColor(0xFF1F1F1F);
         text.setTextAlign(Paint.Align.CENTER);
         Paint.FontMetrics fm = text.getFontMetrics();

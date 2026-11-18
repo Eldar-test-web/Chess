@@ -92,20 +92,20 @@ public class MoreScreen {
                 row.setGravity(Gravity.CENTER_VERTICAL);
                 row.setPadding(Ui.dp(c, 24), 0, Ui.dp(c, 24), 0);
                 row.setLayoutParams(new LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 68)));
+                        ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 80)));
 
                 int res = c.getResources().getIdentifier(
                         "more_" + parts[0], "drawable", c.getPackageName());
                 ImageView icon = new ImageView(c);
                 icon.setImageResource(res);
-                icon.setScaleType(ImageView.ScaleType.FIT_XY);
+                icon.setScaleType(ImageView.ScaleType.FIT_CENTER);
                 row.addView(icon, new LinearLayout.LayoutParams(
-                        Ui.dp(c, 32), Ui.dp(c, 32)));
+                        Ui.dp(c, 40), Ui.dp(c, 40)));
 
                 TextView t = Ui.text(c, parts[1], 16, 0xFFF0EFED, true);
                 LinearLayout.LayoutParams tp = new LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                tp.setMargins(Ui.dp(c, 16), 0, 0, 0);
+                tp.setMargins(Ui.dp(c, 18), 0, 0, 0);
                 t.setLayoutParams(tp);
                 row.addView(t);
                 row.addView(Ui.spacerWeight(c, 1f));
@@ -120,14 +120,12 @@ public class MoreScreen {
                 row.setOnClickListener(new View.OnClickListener() {
                     @Override public void onClick(View v) {
                         if (parts.length > 2) {
-                            if (parts[2].equals("premium")) main.navigate("premium");
-                            else if (parts[2].equals("friends")) main.navigate("friends");
-                            else if (parts[2].equals("watch")) main.navigate("watch");
-                            else Toast.makeText(c, "ChessTV is live! Opening soon",
-                                    Toast.LENGTH_SHORT).show();
-                        } else {
-                            Toast.makeText(c, parts[1] + " - coming soon", Toast.LENGTH_SHORT).show();
+                            String act = parts[2];
+                            if (act.equals("premium")) { main.navigate("premium"); return; }
+                            if (act.equals("friends")) { main.navigate("friends"); return; }
+                            if (act.equals("watch")) { main.navigate("watch"); return; }
                         }
+                        MoreDetailScreen.open(main, parts[0]);
                     }
                 });
                 root.addView(row);
