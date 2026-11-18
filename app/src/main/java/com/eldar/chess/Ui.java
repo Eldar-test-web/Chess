@@ -2,8 +2,14 @@ package com.eldar.chess;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.BitmapShader;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.RectF;
+import android.graphics.Shader;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
@@ -133,14 +139,132 @@ public class Ui {
         return g;
     }
 
-    /** Vertical dark scrim over the board while "Searching..." (screenshot 072139):
-     *  darker at the top, fading to fully transparent by mid-board. */
+    /** Board scrim while "Searching..." (072139): #3C3C3C at 55% flat to 45%,
+     *  fully transparent by 50% - the lower board stays bright. */
     public static GradientDrawable scrim() {
         GradientDrawable g = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
-                new int[]{0x8C3E3E42, 0x333E3E42, 0x003E3E42, 0x003E3E42});
-        g.setColors(new int[]{0x8C3E3E42, 0x333E3E42, 0x003E3E42, 0x003E3E42},
-                new float[]{0f, 0.38f, 0.62f, 1f});
+                new int[]{0x8C3C3C3C, 0x8C3C3C3C, 0x003C3C3C, 0x003C3C3C});
+        g.setColors(new int[]{0x8C3C3C3C, 0x8C3C3C3C, 0x003C3C3C, 0x003C3C3C},
+                new float[]{0f, 0.45f, 0.50f, 1f});
         return g;
+    }
+
+    /** Bottom-bar glyphs copied from 072146: 0 list, 1 chat, 2 back, 3 forward, 4 close. */
+    public static Drawable bottomIcon(Context c, int kind, float sizeDp, int color, int bgColor) {
+        int px = Math.max(4, dp(c, sizeDp));
+        Bitmap bmp = Bitmap.createBitmap(px, px, Bitmap.Config.ARGB_8888);
+        Canvas cv = new Canvas(bmp);
+        Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
+        p.setColor(color);
+        float u = px;
+        switch (kind) {
+            case 0: {
+                float barH = u * 0.16f, gap = u * 0.27f, top = u * 0.17f;
+                p.setStyle(Paint.Style.FILL);
+                for (int i = 0; i < 3; i++) {
+                    float cy = top + i * (barH + gap);
+                    cv.drawRoundRect(u * 0.05f, cy, u * 0.21f, cy + barH, u * 0.03f, u * 0.03f, p);
+                    cv.drawRoundRect(u * 0.35f, cy, u * 0.95f, cy + barH, u * 0.03f, u * 0.03f, p);
+                }
+                break;
+            }
+            case 1: {
+                p.setStyle(Paint.Style.FILL);
+                RectF big = new RectF(u * 0.04f, u * 0.24f, u * 0.74f, u * 0.88f);
+                cv.drawRoundRect(big, u * 0.25f, u * 0.25f, p);
+                Path tail = new Path();
+                tail.moveTo(u * 0.16f, u * 0.80f);
+                tail.lineTo(u * 0.10f, u * 0.99f);
+                tail.lineTo(u * 0.34f, u * 0.84f);
+                tail.close();
+                cv.drawPath(tail, p);
+                p.setStyle(Paint.Style.STROKE);
+                p.setColor(bgColor);
+                p.setStrokeWidth(u * 0.11f);
+                cv.drawRoundRect(new RectF(u * 0.50f, u * 0.02f, u * 1.0f, u * 0.56f),
+                        u * 0.20f, u * 0.20f, p);
+                p.setStyle(Paint.Style.FILL);
+                p.setColor(color);
+                cv.drawRoundRect(new RectF(u * 0.55f, u * 0.07f, u * 0.95f, u * 0.52f),
+                        u * 0.17f, u * 0.17f, p);
+                break;
+            }
+            case 2:
+            case 3: {
+                p.setStyle(Paint.Style.STROKE);
+                p.setStrokeWidth(u * 0.17f);
+                p.setStrokeCap(Paint.Cap.ROUND);
+                p.setStrokeJoin(Paint.Join.ROUND);
+                Path ch = new Path();
+                if (kind == 2) {
+                    ch.moveTo(u * 0.62f, u * 0.16f);
+                    ch.lineTo(u * 0.30f, u * 0.5f);
+                    ch.lineTo(u * 0.62f, u * 0.84f);
+                } else {
+                    ch.moveTo(u * 0.38f, u * 0.16f);
+                    ch.lineTo(u * 0.70f, u * 0.5f);
+                    ch.lineTo(u * 0.38f, u * 0.84f);
+                }
+                cv.drawPath(ch, p);
+                break;
+            }
+            default: {
+                p.setStyle(Paint.Style.STROKE);
+                p.setStrokeWidth(u * 0.15f);
+                p.setStrokeCap(Paint.Cap.ROUND);
+                cv.drawLine(u * 0.22f, u * 0.22f, u * 0.78f, u * 0.78f, p);
+                cv.drawLine(u * 0.78f, u * 0.22f, u * 0.22f, u * 0.78f, p);
+                break;
+            }
+        }
+        return new BitmapDrawable(c.getResources(), bmp);
+    }
+
+    /** 072139 coach bubble: #B8B7B6 rounded box with a small tail on the left. */
+    public static Drawable coachBubbleBg(Context c) {
+        final float tail = dp(c, 7), radius = dp(c, 6);
+        return new Drawable() {
+            @Override public void draw(Canvas cv) {
+                Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
+                p.setColor(0xFFB8B7B6);
+                float w = getBounds().width(), h = getBounds().height();
+                cv.drawRoundRect(new RectF(tail, 0, w, h), radius, radius, p);
+                Path t = new Path();
+                t.moveTo(tail + 1, h * 0.28f);
+                t.lineTo(0, h * 0.42f);
+                t.lineTo(tail + 1, h * 0.56f);
+                t.close();
+                cv.drawPath(t, p);
+            }
+            @Override public void setAlpha(int a) { }
+            @Override public void setColorFilter(android.graphics.ColorFilter f) { }
+            @Override public int getOpacity() { return android.graphics.PixelFormat.TRANSLUCENT; }
+        };
+    }
+
+    /** 072139 green stopwatch icon on the stop-searching button. */
+    public static Drawable stopwatch(Context c, float sizeDp) {
+        int px = Math.max(4, dp(c, sizeDp));
+        Bitmap bmp = Bitmap.createBitmap(px, px, Bitmap.Config.ARGB_8888);
+        Canvas cv = new Canvas(bmp);
+        Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
+        int green = 0xFF7CB342;
+        float u = px;
+        p.setColor(green);
+        p.setStyle(Paint.Style.FILL);
+        cv.drawRoundRect(u * 0.38f, u * 0.02f, u * 0.62f, u * 0.11f, u * 0.03f, u * 0.03f, p);
+        cv.drawRoundRect(u * 0.90f, u * 0.44f, u * 0.99f, u * 0.58f, u * 0.02f, u * 0.02f, p);
+        p.setStyle(Paint.Style.STROKE);
+        p.setStrokeWidth(u * 0.13f);
+        cv.drawCircle(u * 0.5f, u * 0.56f, u * 0.31f, p);
+        p.setStyle(Paint.Style.FILL);
+        p.setColor(0xFFF4F4F2);
+        cv.drawCircle(u * 0.5f, u * 0.56f, u * 0.245f, p);
+        p.setColor(0xFF6F6D69);
+        p.setStrokeWidth(u * 0.085f);
+        p.setStrokeCap(Paint.Cap.ROUND);
+        cv.drawLine(u * 0.5f, u * 0.56f, u * 0.5f, u * 0.37f, p);
+        return new BitmapDrawable(c.getResources(), bmp);
     }
 
     public static ImageView img(Context c, int resId, int sizeDp) {
@@ -265,5 +389,48 @@ public class Ui {
         p.setColor(0xFFF7C948);
         cv.drawCircle(w * 0.5f, h * 0.5f, h * 0.22f, p);
         return new BitmapDrawable(c.getResources(), b);
+    }
+
+    /** China flag (tiny, red with a yellow star as in 072139/072146). */
+    public static Drawable flagCn(Context c) {
+        int w = dp(c, 12), h = dp(c, 9);
+        Bitmap b = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        Canvas cv = new Canvas(b);
+        Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
+        p.setColor(0xFFD0342C); cv.drawRect(0, 0, w, h, p);
+        p.setColor(0xFFF7C948);
+        drawStar(cv, p, w * 0.24f, h * 0.36f, h * 0.22f);
+        return new BitmapDrawable(c.getResources(), b);
+    }
+
+    private static void drawStar(Canvas cv, Paint p, float cx, float cy, float r) {
+        android.graphics.Path path = new android.graphics.Path();
+        for (int i = 0; i < 10; i++) {
+            double a = -Math.PI / 2 + i * Math.PI / 5;
+            float rr = (i % 2 == 0) ? r : r * 0.45f;
+            float x = cx + (float) Math.cos(a) * rr, y = cy + (float) Math.sin(a) * rr;
+            if (i == 0) path.moveTo(x, y); else path.lineTo(x, y);
+        }
+        path.close();
+        cv.drawPath(path, p);
+    }
+
+    /** Circular crop of a raster asset (coach photos). */
+    public static Drawable circleImage(Context c, int resId, int sizeDp) {
+        Bitmap src = BitmapFactory.decodeResource(c.getResources(), resId);
+        int sz = dp(c, sizeDp);
+        Bitmap out = Bitmap.createBitmap(sz, sz, Bitmap.Config.ARGB_8888);
+        Canvas cv = new Canvas(out);
+        Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
+        BitmapShader sh = new BitmapShader(src, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
+        Matrix m = new Matrix();
+        float scale = Math.max(sz / (float) src.getWidth(), sz / (float) src.getHeight());
+        m.setScale(scale, scale);
+        m.postTranslate((sz - src.getWidth() * scale) / 2f,
+                (sz - src.getHeight() * scale) / 2f);
+        sh.setLocalMatrix(m);
+        p.setShader(sh);
+        cv.drawCircle(sz / 2f, sz / 2f, sz / 2f, p);
+        return new BitmapDrawable(c.getResources(), out);
     }
 }

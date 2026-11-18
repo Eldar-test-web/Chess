@@ -203,7 +203,7 @@ public class NewGameScreen {
                 break;
             default:
                 // quick, grabby online opponent (screenshots 072139 / 072146)
-                persona = new GameSession.Persona("codon201100", 1472, 3, 25,
+                persona = new GameSession.Persona("codon20100", 1472, 3, 25,
                         false, 700, 1500, 0.35, 0.55);
         }
         GameScreen.pendingPersona = persona;

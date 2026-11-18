@@ -41,7 +41,6 @@ public class AppState {
         if (!p.getBoolean("seeded", false)) {
             gamesPlayed = Math.max(gamesPlayed, 1287);
             streak = Math.max(streak, 14);
-            if (learnProgress < 8) learnProgress = 8;
             puzzleRating = Math.max(puzzleRating, 2415);
             puzzlesSolved = Math.max(puzzlesSolved, 1840);
             userRating = 1902;

@@ -409,10 +409,9 @@ public class HomeScreen {
 
         LinearLayout info = Ui.linear(c, LinearLayout.VERTICAL);
         info.setGravity(Gravity.CENTER_VERTICAL);
-        info.setPadding(0, 0, 0, Ui.dp(c, 4));
         LinearLayout.LayoutParams ip = new LinearLayout.LayoutParams(
                 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
-        ip.setMargins(Ui.dp(c, 9), 0, Ui.dp(c, 4), 0);
+        ip.setMargins(Ui.dp(c, 7.6f), 0, Ui.dp(c, 4), 0);
         info.setLayoutParams(ip);
 
         LinearLayout nameRow = Ui.linear(c, LinearLayout.HORIZONTAL);
@@ -430,25 +429,29 @@ public class HomeScreen {
 
         LinearLayout daysRow = Ui.linear(c, LinearLayout.HORIZONTAL);
         daysRow.setGravity(Gravity.CENTER_VERTICAL);
-        TextView clock = Ui.glyph(c, "schedule", 7, 0xFFA5A19B);
-        clock.setLayoutParams(new LinearLayout.LayoutParams(Ui.dp(c, 9), Ui.dp(c, 9)));
+        TextView clock = Ui.glyph(c, "settings", 8, 0xFFA5A19B);
+        clock.setLayoutParams(new LinearLayout.LayoutParams(Ui.dp(c, 10), Ui.dp(c, 10)));
         daysRow.addView(clock);
         TextView days = Ui.text(c, "3 days", 7, 0xFFA5A19B, false);
         LinearLayout.LayoutParams dlp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        dlp.setMargins(Ui.dp(c, 3), 0, 0, 0);
+        dlp.setMargins(Ui.dp(c, 2), 0, 0, 0);
         days.setLayoutParams(dlp);
         daysRow.addView(days);
+        LinearLayout.LayoutParams drp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        drp.setMargins(0, Ui.dp(c, 3), 0, 0);
+        daysRow.setLayoutParams(drp);
         info.addView(daysRow);
 
-        TextView skill = Ui.text(c, "SIMILAR SKILL", 7, 0xFF7AAC4A, true);
-        skill.setLetterSpacing(0.03f);
+        TextView skill = Ui.text(c, "SIMILAR SKILL", 7.5f, 0xFF7AAC4A, true);
+        skill.setLetterSpacing(0.07f);
         skill.setGravity(Gravity.CENTER);
         skill.setBackground(Ui.round(0xFF333E2E, 2, c));
-        skill.setPadding(Ui.dp(c, 3), Ui.dp(c, 1), Ui.dp(c, 3), Ui.dp(c, 1));
+        skill.setPadding(Ui.dp(c, 2.5f), Ui.dp(c, 1.2f), Ui.dp(c, 2.5f), Ui.dp(c, 1.2f));
         LinearLayout.LayoutParams slp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        slp.setMargins(0, Ui.dp(c, 1), 0, 0);
+        slp.setMargins(0, Ui.dp(c, 1.5f), 0, 0);
         skill.setLayoutParams(slp);
         info.addView(skill);
         card.addView(info);
@@ -578,11 +581,12 @@ public class HomeScreen {
         String[] values = {String.valueOf(main.state.bulletRating),
                 String.valueOf(main.state.blitzRating),
                 String.valueOf(main.state.dailyRating), "-"};
-        float[] iconW = {33, 28, 25, 29};
-        float[] iconH = {34, 32, 25, 29};
-        float[] iconTop = {13.5f, 16.5f, 18.5f, 17.5f};
-        float[] labelPad = {1, 0.5f, 5, 2.5f};
-        float[] labelSize = {10, 10, 10, 8.5f};
+        float[] iconW = {33, 30, 25, 24};
+        float[] iconH = {34, 33, 25, 25.5f};
+        float[] iconTop = {14.9f, 15.1f, 17.8f, 18.2f};
+        float[] labelPad = {0.3f, 0, 4.3f, 3.2f};
+        float[] labelSize = {12, 12, 12, 8.5f};
+        float[] labelShift = {-2.75f, -1.37f, -0.69f, 2.75f};
         for (int i = 0; i < 4; i++) {
             if (i > 0) row.addView(gap(c, 8));
             LinearLayout tile = Ui.linear(c, LinearLayout.VERTICAL);
@@ -601,9 +605,11 @@ public class HomeScreen {
             TextView l = Ui.text(c, labels[i], labelSize[i], Ui.WHITE, true);
             l.setGravity(Gravity.CENTER);
             l.setPadding(0, Ui.dp(c, labelPad[i]), 0, 0);
+            l.setTranslationY(Ui.dp(c, labelShift[i]));
             tile.addView(l);
             TextView value = Ui.text(c, values[i], 7.5f, 0xFFB5B1AB, false);
             value.setGravity(Gravity.CENTER);
+            value.setTranslationY(-Ui.dp(c, 4.8f));
             tile.addView(value);
             row.addView(tile);
         }

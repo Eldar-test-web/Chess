@@ -1,8 +1,13 @@
 package com.eldar.chess;
 
 import android.app.AlertDialog;
+import android.graphics.Typeface;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.StyleSpan;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,18 +39,22 @@ public class GameScreen {
     private BoardView boardView;
     private final MainActivity main;
 
-    private TextView opponentClock, userClock, opponentName, userName;
+    private TextView opponentName, userName;
+    private LinearLayout opponentClock, userClock;
+    private TextView opponentClockText, userClockText, opponentClockIcon, userClockIcon;
     private ImageView opponentFlag, userFlag;
     private LinearLayout opponentRow;
-    private FrameLayout opponentAvatar;
+    private ImageView opponentAvatar, userAvatar;
     private HorizontalScrollView moveScroll;
     private LinearLayout moveRow;
     private FrameLayout boardOverlay;
     private View searchDim;
-    private LinearLayout coachBubble;
+    private TextView coachBubble;
     private TextView coachText;
+    private ImageView coachAvatar;
     private View resultOverlay;
     private LinearLayout bottomBar;
+    private View closeButton;
 
     private final Handler handler = new Handler(Looper.getMainLooper());
     private long lastTick = 0;
@@ -78,12 +87,14 @@ public class GameScreen {
         final android.content.Context c = main;
 
         LinearLayout root = Ui.linear(c, LinearLayout.VERTICAL);
-        root.setBackgroundColor(Ui.BG);
+        root.setBackgroundColor(0xFF302D2B);
+        root.setClipChildren(false);
 
-        // ---------- top bar ----------
+        // ---------- top bar (072146: #262421 strip continues through the move bar) ----------
         LinearLayout top = Ui.linear(c, LinearLayout.HORIZONTAL);
+        top.setBackgroundColor(0xFF262421);
         top.setGravity(Gravity.CENTER_VERTICAL);
-        top.setPadding(Ui.dp(c, 8), Ui.dp(c, 6), Ui.dp(c, 8), Ui.dp(c, 4));
+        top.setPadding(Ui.dp(c, 8), 0, Ui.dp(c, 8), 0);
         ImageView back = Ui.img(c, R.drawable.ic_back, 20);
         back.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) { onBackPressed(); }
@@ -95,82 +106,60 @@ public class GameScreen {
         logo.setGravity(Gravity.CENTER);
         top.addView(logo);
         ImageView signal = Ui.img(c, R.drawable.ic_signal, 16);
-        signal.setColorFilter(0xFFB5B0A8);
+        signal.setColorFilter(0xFFB2B2B1);
         top.addView(signal);
-        root.addView(top);
+        root.addView(top, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 32)));
 
-        // ---------- move list bar ----------
+        // ---------- move list bar (072146: number + white move chip right under the bar) ----------
         moveScroll = new HorizontalScrollView(c);
         moveScroll.setHorizontalScrollBarEnabled(false);
-        moveScroll.setBackgroundColor(0xFF211F1C);
-        moveScroll.setVisibility(View.GONE);
-        moveScroll.setPadding(Ui.dp(c, 8), Ui.dp(c, 3), Ui.dp(c, 8), Ui.dp(c, 3));
+        moveScroll.setBackgroundColor(0xFF262421);
+        moveScroll.setPadding(Ui.dp(c, 10), Ui.dp(c, 2), Ui.dp(c, 8), Ui.dp(c, 2));
         moveRow = Ui.linear(c, LinearLayout.HORIZONTAL);
         moveRow.setGravity(Gravity.CENTER_VERTICAL);
         moveScroll.addView(moveRow, new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT));
         root.addView(moveScroll, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 19)));
 
-        // ---------- opponent row ----------
-        opponentRow = Ui.linear(c, LinearLayout.HORIZONTAL);
-        opponentRow.setGravity(Gravity.CENTER_VERTICAL);
-        opponentRow.setPadding(Ui.dp(c, 8), Ui.dp(c, 8), Ui.dp(c, 8), Ui.dp(c, 8));
-        opponentAvatar = new FrameLayout(c);
-        opponentAvatar.setBackground(Ui.round(0xFFD9D5CC, 4, c));
-        opponentAvatar.addView(Ui.glyph(c, "person", 17, 0xFF3B3935),
-                new FrameLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        opponentRow.addView(opponentAvatar, new LinearLayout.LayoutParams(
-                Ui.dp(c, 30), Ui.dp(c, 30)));
-
-        opponentName = Ui.text(c, "", 11, Ui.WHITE, false);
-        LinearLayout.LayoutParams np = new LinearLayout.LayoutParams(
-                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
-        np.setMargins(Ui.dp(c, 7), 0, 0, 0);
-        opponentName.setLayoutParams(np);
-        opponentRow.addView(opponentName);
-
-        opponentFlag = new ImageView(c);
-        opponentFlag.setLayoutParams(new LinearLayout.LayoutParams(Ui.dp(c, 10), Ui.dp(c, 7)));
-        opponentRow.addView(opponentFlag);
-
-        opponentClock = Ui.text(c, "10:00", 12, Ui.WHITE, true);
-        opponentClock.setGravity(Gravity.CENTER);
-        opponentClock.setBackground(Ui.round(0xFF56534E, 4, c));
-        LinearLayout.LayoutParams ocp = new LinearLayout.LayoutParams(
-                Ui.dp(c, 53), Ui.dp(c, 29));
-        ocp.setMargins(Ui.dp(c, 8), 0, 0, 0);
-        opponentClock.setLayoutParams(ocp);
-        opponentRow.addView(opponentClock);
+        // ---------- player rows ----------
+        opponentRow = playerRow(c, true);
+        LinearLayout.LayoutParams orp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        orp.setMargins(0, Ui.dp(c, 28), 0, 0);
+        opponentRow.setLayoutParams(orp);
         root.addView(opponentRow);
 
-        // ---------- coach bubble ----------
-        coachBubble = Ui.linear(c, LinearLayout.HORIZONTAL);
-        coachBubble.setVisibility(View.GONE);
-        coachBubble.setGravity(Gravity.CENTER_VERTICAL);
-        coachBubble.setPadding(Ui.dp(c, 6), Ui.dp(c, 0), Ui.dp(c, 8), Ui.dp(c, 4));
-        FrameLayout coachAv = new FrameLayout(c);
-        View coachBg = new View(c);
-        coachBg.setBackground(Ui.round(0xFFD9D5CC, 17, c));
-        coachAv.addView(coachBg, new FrameLayout.LayoutParams(
-                Ui.dp(c, 34), Ui.dp(c, 34), Gravity.CENTER));
-        coachAv.addView(Ui.glyph(c, "person", 21, 0xFF3B3935),
-                new FrameLayout.LayoutParams(
-                        Ui.dp(c, 34), Ui.dp(c, 34), Gravity.CENTER));
-        coachBubble.addView(coachAv, new LinearLayout.LayoutParams(
-                Ui.dp(c, 38), Ui.dp(c, 46)));
-        coachAv.setTranslationY(-Ui.dp(c, 10));   // overlaps the name row (072139)
-        coachText = Ui.text(c, COACH_TIPS[0], 12, 0xFF2E2C29, false);
+        // ---------- coach slot: fixed footprint so the board never moves (072139/072146) ----------
+        FrameLayout coachSlot = new FrameLayout(c);
+        coachSlot.setClipChildren(false);
+        root.addView(coachSlot, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 28)));
+        coachAvatar = new ImageView(c);
+        coachAvatar.setImageResource(R.drawable.avatar_coach_tall);
+        coachAvatar.setVisibility(View.GONE);
+        FrameLayout.LayoutParams cap = new FrameLayout.LayoutParams(
+                Ui.dp(c, 28), Ui.dp(c, 48), Gravity.TOP | Gravity.START);
+        cap.leftMargin = Ui.dp(c, 12);
+        cap.topMargin = -Ui.dp(c, 36);
+        coachSlot.addView(coachAvatar, cap);
+
+        coachText = Ui.text(c, COACH_TIPS[0], 11, 0xFF2E2C29, false);
+        coachText.setSingleLine(true);
         coachText.setTextColor(0xFF2E2C29);
-        coachText.setBackground(Ui.round(0xFFB8B7B6, 8, c));
-        coachText.setPadding(Ui.dp(c, 10), Ui.dp(c, 7), Ui.dp(c, 10), Ui.dp(c, 7));
-        LinearLayout.LayoutParams bp = new LinearLayout.LayoutParams(
-                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
-        bp.setMargins(0, 0, Ui.dp(c, 10), 0);
-        coachText.setLayoutParams(bp);
-        coachBubble.addView(coachText);
-        root.addView(coachBubble);
+        coachText.setBackground(Ui.coachBubbleBg(c));
+        coachText.setGravity(Gravity.CENTER_VERTICAL);
+        coachText.setPadding(Ui.dp(c, 12), 0, Ui.dp(c, 8), 0);
+        coachBubble = coachText;
+        coachBubble.setVisibility(View.GONE);
+        FrameLayout.LayoutParams bp2 = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 37),
+                Gravity.TOP);
+        bp2.leftMargin = Ui.dp(c, 39);
+        bp2.rightMargin = Ui.dp(c, 26);
+        bp2.topMargin = -Ui.dp(c, 21);
+        coachSlot.addView(coachBubble, bp2);
 
         // ---------- board ----------
         boardView = new BoardView(c);
@@ -179,31 +168,36 @@ public class GameScreen {
         });
         boardView.setFlipped(!session.userIsWhite);
         boardView.setLayoutParams(new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         boardOverlay = new FrameLayout(c);
         boardOverlay.addView(boardView);
 
-        // searching layer (072139): gradient scrim fading down the empty board
+        // searching layer (072139): dark plateau to 45% then bright board below
         searchDim = Ui.linear(c, LinearLayout.VERTICAL);
         searchDim.setBackground(Ui.scrim());
-        ((LinearLayout) searchDim).setGravity(Gravity.CENTER);
-        TextView searching = Ui.text(c, "Searching...", 24, Ui.WHITE, true);
+        ((LinearLayout) searchDim).setGravity(Gravity.CENTER_HORIZONTAL | Gravity.TOP);
+        float wdp = c.getResources().getDisplayMetrics().widthPixels
+                / c.getResources().getDisplayMetrics().density;
+        searchDim.setPadding(0, Math.round(wdp * 0.377f
+                * c.getResources().getDisplayMetrics().density), 0, 0);
+        TextView searching = Ui.text(c, "Searching...", 17, Ui.WHITE, true);
         searching.setGravity(Gravity.CENTER);
         ((LinearLayout) searchDim).addView(searching);
+        ((LinearLayout) searchDim).addView(Ui.spacer(c, 0, Ui.dp(c, 8)));
         FrameLayout stopHalo = new FrameLayout(c);
-        stopHalo.setBackground(Ui.round(0x2EFFFFFF, 13, c));
+        stopHalo.setBackground(Ui.round(0x12FFFFFF, 12, c));
         FrameLayout stopButton = new FrameLayout(c);
-        stopButton.setBackground(Ui.round(0xFF2E2C29, 8, c));
-        stopButton.addView(Ui.glyph(c, "timer", 19, Ui.WHITE),
-                new FrameLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        stopButton.setBackground(Ui.round(0xFF2B2A27, 7, c));
+        ImageView stopIcon = new ImageView(c);
+        stopIcon.setImageDrawable(Ui.stopwatch(c, 18));
+        stopButton.addView(stopIcon, new FrameLayout.LayoutParams(
+                Ui.dp(c, 18), Ui.dp(c, 18), Gravity.CENTER));
         FrameLayout.LayoutParams sbp = new FrameLayout.LayoutParams(
-                Ui.dp(c, 44), Ui.dp(c, 44), Gravity.CENTER);
+                Ui.dp(c, 30), Ui.dp(c, 30), Gravity.CENTER);
         stopHalo.addView(stopButton, sbp);
         LinearLayout.LayoutParams stp = new LinearLayout.LayoutParams(
-                Ui.dp(c, 60), Ui.dp(c, 60));
-        stp.setMargins(0, Ui.dp(c, 10), 0, 0);
+                Ui.dp(c, 40), Ui.dp(c, 40));
         stopHalo.setLayoutParams(stp);
         stopHalo.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) { main.navigate("home"); }
@@ -212,84 +206,65 @@ public class GameScreen {
         boardOverlay.addView(searchDim, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         root.addView(boardOverlay, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         // ---------- user row ----------
-        LinearLayout userRow = Ui.linear(c, LinearLayout.HORIZONTAL);
-        userRow.setGravity(Gravity.CENTER_VERTICAL);
-        userRow.setPadding(Ui.dp(c, 8), Ui.dp(c, 8), Ui.dp(c, 8), Ui.dp(c, 8));
-        FrameLayout userAv = new FrameLayout(c);
-        userAv.setBackground(Ui.round(0xFFD9D5CC, 4, c));
-        userAv.addView(Ui.glyph(c, "person", 17, 0xFF3B3935),
-                new FrameLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        userRow.addView(userAv, new LinearLayout.LayoutParams(Ui.dp(c, 30), Ui.dp(c, 30)));
-
-        userName = Ui.text(c, "", 11, Ui.WHITE, false);
-        LinearLayout.LayoutParams unp = new LinearLayout.LayoutParams(
-                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
-        unp.setMargins(Ui.dp(c, 7), 0, 0, 0);
-        userName.setLayoutParams(unp);
-        userRow.addView(userName);
-
-        userFlag = new ImageView(c);
-        userFlag.setLayoutParams(new LinearLayout.LayoutParams(Ui.dp(c, 10), Ui.dp(c, 7)));
-        userRow.addView(userFlag);
-
-        userClock = Ui.text(c, "10:00", 12, Ui.WHITE, true);
-        userClock.setGravity(Gravity.CENTER);
-        userClock.setBackground(Ui.round(0xFF56534E, 4, c));
-        LinearLayout.LayoutParams ucp = new LinearLayout.LayoutParams(
-                Ui.dp(c, 53), Ui.dp(c, 29));
-        ucp.setMargins(Ui.dp(c, 8), 0, 0, 0);
-        userClock.setLayoutParams(ucp);
-        userRow.addView(userClock);
+        LinearLayout userRow = playerRow(c, false);
+        LinearLayout.LayoutParams urp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        urp.setMargins(0, Ui.dp(c, 26), 0, 0);
+        userRow.setLayoutParams(urp);
         root.addView(userRow);
 
-        // ---------- bottom bar ----------
+        // leftover height sits under the player row, toolbar stays pinned (072146)
+        root.addView(Ui.spacerWeight(c, 1f));
+
+        // ---------- bottom bar: four equal slots, X floats in the centre while searching ----------
+        FrameLayout bottomWrap = new FrameLayout(c);
+        bottomWrap.setBackgroundColor(0xFF302D2B);
         bottomBar = Ui.linear(c, LinearLayout.HORIZONTAL);
-        bottomBar.setBackgroundColor(0xFF211F1C);
         bottomBar.setGravity(Gravity.CENTER_VERTICAL);
-        bottomBar.setPadding(0, Ui.dp(c, 4), 0, Ui.dp(c, 4));
-        root.addView(bottomBar, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 50)));
+        bottomBar.setPadding(0, Ui.dp(c, 7), 0, Ui.dp(c, 5));
+        bottomWrap.addView(bottomBar, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 43)));
+        root.addView(bottomWrap, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 43)));
+
+        ImageView closeBtn = new ImageView(c);
+        closeBtn.setImageDrawable(Ui.bottomIcon(c, 4, 15, 0xFFB7B6B5, 0xFF302D2B));
+        closeBtn.setVisibility(View.GONE);
+        bottomWrap.addView(closeBtn, new FrameLayout.LayoutParams(
+                Ui.dp(c, 15), Ui.dp(c, 15), Gravity.CENTER));
+        closeBtn.setTag("x");
+        closeBtn.setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View v) { main.navigate("home"); }
+        });
+        closeButton = closeBtn;
 
         // persona setup
         if (session.passAndPlay) {
-            opponentName.setText("Friend  (" + main.state.userRating + ")");
-            userName.setText("You  (" + main.state.userRating + ")");
+            setPlayerName(opponentName, "Friend", main.state.userRating);
+            setPlayerName(userName, "You", main.state.userRating);
             opponentFlag.setImageDrawable(Ui.flagAz(c));
             userFlag.setImageDrawable(Ui.flagAz(c));
         } else {
-            opponentName.setText(session.persona.name + "  (" + session.persona.rating + ")");
-            userName.setText(session.userName + "  (" + main.state.userRating + ")");
-            opponentFlag.setImageDrawable(Ui.flagRed(c));
+            setPlayerName(opponentName, session.persona.name, session.persona.rating);
+            setPlayerName(userName, session.userName, main.state.userRating);
+            opponentFlag.setImageDrawable(Ui.flagCn(c));
             userFlag.setImageDrawable(Ui.flagAz(c));
         }
 
         // ---------- bottom bar items ----------
-        bottomItem(c, "Options", R.drawable.ic_list_options, new Runnable() {
+        bottomItem(c, 0, "Options", new Runnable() {
             @Override public void run() { showOptionsMenu(); }
         });
-        bottomItem(c, "Chat", R.drawable.ic_chat, new Runnable() {
+        bottomItem(c, 1, "Chat", new Runnable() {
             @Override public void run() { showChat(); }
         });
-        ImageView x = new ImageView(c);
-        x.setImageResource(R.drawable.ic_close);
-        x.setColorFilter(0xFFA8A29A);
-        LinearLayout.LayoutParams xp = new LinearLayout.LayoutParams(
-                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
-        x.setLayoutParams(xp);
-        x.setPadding(Ui.dp(c, 14), Ui.dp(c, 4), Ui.dp(c, 14), Ui.dp(c, 4));
-        x.setTag("x");
-        x.setOnClickListener(new View.OnClickListener() {
-            @Override public void onClick(View v) { main.navigate("home"); }
-        });
-        bottomBar.addView(x);
-        bottomItem(c, "Back", R.drawable.ic_chevron_left, new Runnable() {
+        bottomItem(c, 2, "Back", new Runnable() {
             @Override public void run() { session.stepBack(); }
         });
-        bottomItem(c, "Forward", R.drawable.ic_chevron_right, new Runnable() {
+        bottomItem(c, 3, "Forward", new Runnable() {
             @Override public void run() { session.stepForward(); }
         });
 
@@ -305,18 +280,18 @@ public class GameScreen {
         return root;
     }
 
-    private void bottomItem(android.content.Context c, String label, int iconRes,
+    private void bottomItem(android.content.Context c, int iconKind, String label,
                             final Runnable action) {
         LinearLayout item = Ui.linear(c, LinearLayout.VERTICAL);
-        item.setGravity(Gravity.CENTER);
+        item.setGravity(Gravity.CENTER_HORIZONTAL);
         item.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f));
         ImageView iv = new ImageView(c);
-        iv.setImageResource(iconRes);
-        iv.setColorFilter(0xFFB5B0A8);
-        iv.setLayoutParams(new LinearLayout.LayoutParams(Ui.dp(c, 22), Ui.dp(c, 22)));
+        iv.setImageDrawable(Ui.bottomIcon(c, iconKind, 17, 0xFFB7B6B5, 0xFF302D2B));
+        iv.setLayoutParams(new LinearLayout.LayoutParams(Ui.dp(c, 17), Ui.dp(c, 17)));
         item.addView(iv);
-        TextView t = Ui.text(c, label, 11, 0xFFB5B0A8, false);
+        TextView t = Ui.text(c, label, 8.5f, 0xFFB7B6B5, false);
         t.setGravity(Gravity.CENTER);
+        t.setPadding(0, Ui.dp(c, 3), 0, 0);
         item.addView(t);
         item.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) { action.run(); }
@@ -324,21 +299,93 @@ public class GameScreen {
         bottomBar.addView(item);
     }
 
+    private LinearLayout playerRow(android.content.Context c, boolean opponent) {
+        LinearLayout row = Ui.linear(c, LinearLayout.HORIZONTAL);
+        row.setGravity(Gravity.CENTER_VERTICAL);
+        row.setPadding(Ui.dp(c, 12), Ui.dp(c, 6), Ui.dp(c, 10), Ui.dp(c, 6));
+
+        ImageView av = new ImageView(c);
+        av.setImageResource(R.drawable.avatar_pawn);
+        av.setScaleType(ImageView.ScaleType.FIT_XY);
+        row.addView(av, new LinearLayout.LayoutParams(Ui.dp(c, 28), Ui.dp(c, 28)));
+
+        TextView name = Ui.text(c, "", 11, Ui.WHITE, false);
+        LinearLayout.LayoutParams np = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        np.setMargins(Ui.dp(c, 11), 0, 0, 0);
+        name.setLayoutParams(np);
+        row.addView(name);
+
+        ImageView flag = new ImageView(c);
+        LinearLayout.LayoutParams fp = new LinearLayout.LayoutParams(Ui.dp(c, 10), Ui.dp(c, 7));
+        fp.setMargins(Ui.dp(c, 4), 0, 0, 0);
+        flag.setLayoutParams(fp);
+        row.addView(flag);
+
+        row.addView(Ui.spacerWeight(c, 1f));
+
+        LinearLayout clockBox = Ui.linear(c, LinearLayout.HORIZONTAL);
+        clockBox.setGravity(Gravity.CENTER);
+        clockBox.setBackground(Ui.round(0xFF979695, 4, c));
+        LinearLayout.LayoutParams cp = new LinearLayout.LayoutParams(
+                Ui.dp(c, 54), Ui.dp(c, 30));
+        cp.setMargins(Ui.dp(c, 8), 0, 0, 0);
+        clockBox.setLayoutParams(cp);
+
+        TextView clockIcon = Ui.glyph(c, "schedule", 8.5f, Ui.WHITE);
+        clockIcon.setGravity(Gravity.CENTER);
+        clockIcon.setVisibility(View.GONE);
+        LinearLayout.LayoutParams ip = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        ip.setMargins(Ui.dp(c, 6), 0, 0, 0);
+        clockBox.addView(clockIcon, ip);
+
+        TextView clockText = Ui.text(c, "10:00", 10.5f, 0xFF575553, true);
+        clockText.setTypeface(Typeface.create("sans-serif-condensed", Typeface.BOLD));
+        clockText.setSingleLine(true);
+        clockText.setIncludeFontPadding(false);
+        clockText.setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
+        LinearLayout.LayoutParams tp = new LinearLayout.LayoutParams(0,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        tp.setMargins(Ui.dp(c, 3), 0, Ui.dp(c, 6), 0);
+        clockBox.addView(clockText, tp);
+        row.addView(clockBox);
+
+        if (opponent) {
+            opponentAvatar = av; opponentName = name; opponentFlag = flag;
+            opponentClock = clockBox; opponentClockText = clockText; opponentClockIcon = clockIcon;
+        } else {
+            userAvatar = av; userName = name; userFlag = flag;
+            userClock = clockBox; userClockText = clockText; userClockIcon = clockIcon;
+        }
+        return row;
+    }
+
+    private static void setPlayerName(TextView tv, String name, int rating) {
+        SpannableStringBuilder sb = new SpannableStringBuilder(name + "  (" + rating + ")");
+        sb.setSpan(new StyleSpan(Typeface.BOLD), 0, name.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        sb.setSpan(new ForegroundColorSpan(0xFFA8A29A), name.length(), sb.length(),
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        tv.setText(sb);
+    }
+
     private static final String EMPTY_BOARD_FEN = "8/8/8/8/8/8/8/8 w - - 0 1";
 
     private void startSearching() {
-        showTag("x", View.VISIBLE);
+        closeButton.setVisibility(View.VISIBLE);
         // 072139: the board is empty while the opponent is being found
         boardView.setState(EMPTY_BOARD_FEN, null);
+        boardView.setCoordinates(false);
         boardView.setInteractive(false);
         searchDim.setVisibility(View.VISIBLE);
-        setClockStyle(opponentClock, false);
-        setClockStyle(userClock, false);
+        setClockStyle(opponentClock, opponentClockIcon, opponentClockText, false);
+        setClockStyle(userClock, userClockIcon, userClockText, false);
         if (session.persona != null && !session.passAndPlay) {
-            // 072139: the coach greeting shows during the search, online included
+            // 072139: the coach greeting shows during the search; the coach photo
+            // sits over the opponent's avatar slot
             coachText.setText(COACH_TIPS[0]);
             coachBubble.setVisibility(View.VISIBLE);
-            coachBubble.setAlpha(0.92f);
+            coachAvatar.setVisibility(View.VISIBLE);
             opponentRow.setAlpha(0.5f);
         }
         handler.postDelayed(new Runnable() {
@@ -349,19 +396,14 @@ public class GameScreen {
         }, 2600);
     }
 
-    private void showTag(String tag, int vis) {
-        for (int i = 0; i < bottomBar.getChildCount(); i++) {
-            View child = bottomBar.getChildAt(i);
-            if (tag.equals(child.getTag())) child.setVisibility(vis);
-        }
-    }
-
     private void beginGame() {
         session.status = GameSession.Status.ACTIVE;
         searchDim.setVisibility(View.GONE);
-        showTag("x", View.GONE);
+        closeButton.setVisibility(View.GONE);
         coachBubble.setVisibility(View.GONE);
+        coachAvatar.setVisibility(View.GONE);
         opponentRow.setAlpha(1f);
+        boardView.setCoordinates(true);
         boardView.setInteractive(true);
         refresh();
         lastTick = System.currentTimeMillis();
@@ -371,7 +413,18 @@ public class GameScreen {
         // and opens; your clock already ran while the game was setting up
         if (!session.passAndPlay && session.board.getSideToMove() != session.userSide()) {
             if (session.userSide() == Side.BLACK) session.clockBlackMs -= 3000;
-            scheduleBotMove(500);
+            handler.postDelayed(new Runnable() {
+                @Override public void run() {
+                    if (destroyed || session.status != GameSession.Status.ACTIVE) return;
+                    // 072146: the bot (white) always opens 1.e4, then plays on
+                    Move opener = session.findMove("E2", "E4", null);
+                    if (opener != null) {
+                        session.playMove(opener);
+                    } else {
+                        scheduleBotMove(300);
+                    }
+                }
+            }, 500);
         }
     }
 
@@ -392,27 +445,24 @@ public class GameScreen {
     private void updateClocks() {
         boolean whiteToMove = session.board.getSideToMove() == Side.WHITE;
         boolean opponentToMove = whiteToMove == (session.botSide() == Side.WHITE);
-        opponentClock.setText(session.fmtClock(session.clockOf(session.botSide())));
-        userClock.setText(session.fmtClock(session.clockOf(session.userSide())));
-        setClockStyle(opponentClock, opponentToMove);
-        setClockStyle(userClock, !opponentToMove);
+        opponentClockText.setText(session.fmtClock(session.clockOf(session.botSide())));
+        userClockText.setText(session.fmtClock(session.clockOf(session.userSide())));
+        setClockStyle(opponentClock, opponentClockIcon, opponentClockText, opponentToMove);
+        setClockStyle(userClock, userClockIcon, userClockText, !opponentToMove);
     }
 
-    /** 072146: the side on the move carries the black clock, white ring and ticker icon. */
-    private void setClockStyle(TextView clock, boolean active) {
+    /** 072146: the side on the move carries the black clock, white ticker icon;
+     *  the waiting side shows the plain grey pill with dark digits. */
+    private void setClockStyle(LinearLayout box, TextView icon, TextView text, boolean active) {
         if (active) {
-            clock.setTextColor(Ui.WHITE);
-            clock.setBackground(Ui.roundStroke(0xFF000000, 4, 0xFFFFFFFF, 1.5f, main));
-            android.graphics.drawable.Drawable icon =
-                    main.getResources().getDrawable(R.drawable.ic_clock_small, null);
-            icon.setTint(0xFFFFFFFF);
-            icon.setBounds(0, 0, Ui.dp(main, 12), Ui.dp(main, 14));
-            clock.setCompoundDrawables(icon, null, null, null);
-            clock.setCompoundDrawablePadding(Ui.dp(main, 4));
+            text.setTextColor(Ui.WHITE);
+            icon.setTextColor(Ui.WHITE);
+            icon.setVisibility(View.VISIBLE);
+            box.setBackground(Ui.round(0xFF0A0A0A, 4, main));
         } else {
-            clock.setTextColor(0xFF575553);
-            clock.setBackground(Ui.round(0xFF979695, 4, main));
-            clock.setCompoundDrawables(null, null, null, null);
+            text.setTextColor(0xFF575553);
+            icon.setVisibility(View.GONE);
+            box.setBackground(Ui.round(0xFF979695, 4, main));
         }
     }
 
@@ -439,16 +489,16 @@ public class GameScreen {
             String san = session.sanHistory.get(i);
             boolean white = i % 2 == 0;
             if (white) {
-                TextView n = Ui.text(main, moveNo + ".", 12, 0xFF8A8780, false);
-                n.setPadding(Ui.dp(main, 2), 0, Ui.dp(main, 2), 0);
+                TextView n = Ui.text(main, moveNo + ".", 10, 0xFF7E7B76, false);
+                n.setPadding(0, 0, Ui.dp(main, 7), 0);
                 moveRow.addView(n);
             }
-            TextView chip = Ui.text(main, san, 12, Ui.WHITE, false);
-            chip.setPadding(Ui.dp(main, 5), Ui.dp(main, 2), Ui.dp(main, 5), Ui.dp(main, 2));
+            TextView chip = Ui.text(main, san, 9, Ui.WHITE, true);
+            chip.setPadding(Ui.dp(main, 5), Ui.dp(main, 1), Ui.dp(main, 5), Ui.dp(main, 1));
+            chip.setBackground(Ui.round(0xFF5E5B57, 2.5f, main));
             moveRow.addView(chip);
             if (!white) moveNo++;
         }
-        moveScroll.setVisibility(session.sanHistory.isEmpty() ? View.GONE : View.VISIBLE);
         if (!session.sanHistory.isEmpty()) {
             moveScroll.post(new Runnable() {
                 @Override public void run() { moveScroll.fullScroll(View.FOCUS_RIGHT); }
@@ -524,9 +574,13 @@ public class GameScreen {
     private void showCoachBubble(String tip, long ms) {
         coachText.setText(tip);
         coachBubble.setVisibility(View.VISIBLE);
+        coachAvatar.setVisibility(View.VISIBLE);
         handler.postDelayed(new Runnable() {
             @Override public void run() {
-                if (!destroyed) coachBubble.setVisibility(View.GONE);
+                if (!destroyed) {
+                    coachBubble.setVisibility(View.GONE);
+                    coachAvatar.setVisibility(View.GONE);
+                }
             }
         }, ms);
     }

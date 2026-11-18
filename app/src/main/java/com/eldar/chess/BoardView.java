@@ -24,9 +24,9 @@ public class BoardView extends View {
         void onSquareTapped(int file, int rank);
     }
 
-    private static final int LIGHT = 0xFFEBECD0;
-    private static final int DARK = 0xFF739552;
-    private static final int HIGHLIGHT = 0xFFEFE96E;
+    private static final int LIGHT = 0xFFEEEED2;
+    private static final int DARK = 0xFF769656;
+    private static final int HIGHLIGHT = 0xFFF7F783;
     private static final int SELECT_OVER = 0x88DDD98A;
     private static final int DOT = 0x66000000;
 
@@ -36,6 +36,7 @@ public class BoardView extends View {
     private Set<Integer> targets = new HashSet<>();
     private boolean flipped = false;
     private boolean interactive = true;
+    private boolean coords = true;
     private Listener listener;
 
     private final HashMap<String, Bitmap> pieces = new HashMap<>();
@@ -54,6 +55,8 @@ public class BoardView extends View {
     public boolean isFlipped() { return flipped; }
     public void setFlipped(boolean f) { flipped = f; invalidate(); }
 
+    public void setCoordinates(boolean show) { coords = show; invalidate(); }
+
     public void setState(String fen, int[] lastMove) {
         this.fen = fen;
         this.lastMove = lastMove;
@@ -67,13 +70,20 @@ public class BoardView extends View {
     }
 
     private int squareSize() { return getWidth() / 8; }
+    private int cellHeight() { return getHeight() / 8; }
 
-    /** the 8x8 board is square; centre it vertically in the view */
-    private int boardTop() { return Math.max(0, (getHeight() - getWidth()) / 2); }
+    /** board fills the view; cells are ~2.2% taller than wide as in the 072146 SS */
+    private int boardTop() { return 0; }
+
+    @Override protected void onMeasure(int wSpec, int hSpec) {
+        int w = MeasureSpec.getSize(wSpec);
+        setMeasuredDimension(w, Math.round(w * 1.0224f));
+    }
 
     @Override protected void onDraw(Canvas canvas) {
-        int sq = squareSize();
-        if (sq <= 0) return;
+        int sqw = squareSize();
+        int sqh = cellHeight();
+        if (sqw <= 0 || sqh <= 0) return;
         int boardY = boardTop();
         String[] rows = parseFen(fen);
 
@@ -82,17 +92,17 @@ public class BoardView extends View {
                 int file = flipped ? 7 - col : col;
                 int rank = flipped ? row : 7 - row;
                 boolean lightSquare = ((file + rank) % 2) == 1;
-                int x = col * sq, y = boardY + row * sq;
+                int x = col * sqw, y = boardY + row * sqh;
                 int color = lightSquare ? LIGHT : DARK;
                 if (lastMove != null && isLast(file, rank)) color = HIGHLIGHT;
                 if (selected != null && selected[0] == file && selected[1] == rank) {
                     paint.setColor(color);
-                    canvas.drawRect(x, y, x + sq, y + sq, paint);
+                    canvas.drawRect(x, y, x + sqw, y + sqh, paint);
                     paint.setColor(SELECT_OVER);
-                    canvas.drawRect(x, y, x + sq, y + sq, paint);
+                    canvas.drawRect(x, y, x + sqw, y + sqh, paint);
                 } else {
                     paint.setColor(color);
-                    canvas.drawRect(x, y, x + sq, y + sq, paint);
+                    canvas.drawRect(x, y, x + sqw, y + sqh, paint);
                 }
                 if (targets.contains(key(file, rank))) {
                     String pcHere = rows[7 - rank].charAt(file) == '.' ? null
@@ -101,11 +111,11 @@ public class BoardView extends View {
                     if (pcHere != null) {
                         // capture target: ring
                         paint.setStyle(Paint.Style.STROKE);
-                        paint.setStrokeWidth(sq * 0.07f);
-                        canvas.drawCircle(x + sq / 2f, y + sq / 2f, sq * 0.42f, paint);
+                        paint.setStrokeWidth(sqw * 0.07f);
+                        canvas.drawCircle(x + sqw / 2f, y + sqh / 2f, sqw * 0.42f, paint);
                         paint.setStyle(Paint.Style.FILL);
                     } else {
-                        canvas.drawCircle(x + sq / 2f, y + sq / 2f, sq * 0.16f, paint);
+                        canvas.drawCircle(x + sqw / 2f, y + sqh / 2f, sqw * 0.16f, paint);
                     }
                 }
                 // piece
@@ -114,26 +124,25 @@ public class BoardView extends View {
                 if (pc != null) {
                     Bitmap b = getPiece(pc);
                     if (b != null) {
-                        int size = (int) (sq * 0.98f);
-                        float left = x + (sq - size) / 2f, top = y + (sq - size) / 2f;
-                        canvas.drawBitmap(b, null, new Rect((int) left, (int) top,
-                                (int) left + size, (int) top + size), paint);
+                        paint.setFilterBitmap(true);
+                        canvas.drawBitmap(b, null, new Rect(x, y, x + sqw, y + sqh), paint);
                     }
                 }
             }
         }
         // coordinates drawn inside edge squares (chess.com style):
         // file letters always on the bottom row, rank numbers always on the left column
-        textPaint.setTextSize(sq * 0.22f);
+        if (!coords) return;
+        textPaint.setTextSize(sqw * 0.22f);
         for (int col = 0; col < 8; col++) {
             int file = flipped ? 7 - col : col;
             int rank = flipped ? 7 : 0;          // rank of the bottom row
             boolean lightSquare = ((file + rank) % 2) == 1;
             String letter = String.valueOf((char) ('a' + file));
-            float lx = col * sq + sq - sq * 0.12f;
-            float ly = boardY + 7 * sq + sq - sq * 0.10f;
+            float lx = col * sqw + sqw - sqw * 0.12f;
+            float ly = boardY + 7 * sqh + sqh - sqh * 0.10f;
             boolean lastCol = lastMove != null && (lastMove[2] == file && lastMove[3] == rank);
-            textPaint.setColor(lastCol ? 0xFF4A4A3A : (lightSquare ? 0x8C739552 : 0x9CEBECD0));
+            textPaint.setColor(lastCol ? 0xFF4A4A3A : (lightSquare ? 0x8C769656 : 0x9CEEEED2));
             canvas.drawText(letter, lx, ly, textPaint);
         }
         for (int row = 0; row < 8; row++) {
@@ -141,10 +150,10 @@ public class BoardView extends View {
             int file = flipped ? 7 : 0;          // file of the left column
             boolean lightSquare = ((file + rank) % 2) == 1;
             String num = String.valueOf(rank + 1);
-            float lx = sq * 0.14f;
-            float ly = boardY + row * sq + sq * 0.20f;
+            float lx = sqw * 0.14f;
+            float ly = boardY + row * sqh + sqh * 0.20f;
             boolean lastRow = lastMove != null && (lastMove[2] == file && lastMove[3] == rank);
-            textPaint.setColor(lastRow ? 0xFF4A4A3A : (lightSquare ? 0x8C739552 : 0x9CEBECD0));
+            textPaint.setColor(lastRow ? 0xFF4A4A3A : (lightSquare ? 0x8C769656 : 0x9CEEEED2));
             canvas.drawText(num, lx, ly, textPaint);
         }
     }
@@ -161,18 +170,18 @@ public class BoardView extends View {
         if (b == null) {
             String name;
             switch (code) {
-                case "K": name = "piece_wk"; break;
-                case "Q": name = "piece_wq"; break;
-                case "R": name = "piece_wr"; break;
-                case "B": name = "piece_wb"; break;
-                case "N": name = "piece_wn"; break;
-                case "P": name = "piece_wp"; break;
-                case "k": name = "piece_bk"; break;
-                case "q": name = "piece_bq"; break;
-                case "r": name = "piece_br"; break;
-                case "b": name = "piece_bb"; break;
-                case "n": name = "piece_bn"; break;
-                default: name = "piece_bp"; break;
+                case "K": name = "piece_neo_wk"; break;
+                case "Q": name = "piece_neo_wq"; break;
+                case "R": name = "piece_neo_wr"; break;
+                case "B": name = "piece_neo_wb"; break;
+                case "N": name = "piece_neo_wn"; break;
+                case "P": name = "piece_neo_wp"; break;
+                case "k": name = "piece_neo_bk"; break;
+                case "q": name = "piece_neo_bq"; break;
+                case "r": name = "piece_neo_br"; break;
+                case "b": name = "piece_neo_bb"; break;
+                case "n": name = "piece_neo_bn"; break;
+                default: name = "piece_neo_bp"; break;
             }
             int id = getResources().getIdentifier(name, "drawable", getContext().getPackageName());
             b = BitmapFactory.decodeResource(getResources(), id);
@@ -201,10 +210,11 @@ public class BoardView extends View {
     @Override public boolean onTouchEvent(android.view.MotionEvent ev) {
         if (!interactive || listener == null) return false;
         if (ev.getAction() != android.view.MotionEvent.ACTION_UP) return true;
-        int sq = squareSize();
-        if (sq <= 0) return true;
-        int col = (int) (ev.getX() / sq);
-        int row = (int) ((ev.getY() - boardTop()) / sq);
+        int sqw = squareSize();
+        int sqh = cellHeight();
+        if (sqw <= 0 || sqh <= 0) return true;
+        int col = (int) (ev.getX() / sqw);
+        int row = (int) ((ev.getY() - boardTop()) / sqh);
         if (col < 0 || col > 7 || row < 0 || row > 7) return true;
         int file = flipped ? 7 - col : col;
         int rank = flipped ? row : 7 - row;

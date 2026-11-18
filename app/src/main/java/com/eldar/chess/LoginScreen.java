@@ -134,12 +134,9 @@ public class LoginScreen {
         // ---- Continue with Email ----
         root.addView(continueBtn(c, "Continue with Email", new BtnIcon() {
             @Override public View make(android.content.Context ctx) {
-                TextView e = new TextView(ctx);
-                e.setText("✉");
-                e.setTextSize(11);
-                e.setTextColor(Ui.WHITE);
-                e.setGravity(Gravity.CENTER);
-                e.setBackground(Ui.round(0xFF3E9BDD, 4, ctx));
+                ImageView e = new ImageView(ctx);
+                e.setImageResource(R.drawable.login_mail);
+                e.setScaleType(ImageView.ScaleType.FIT_CENTER);
                 return e;
             }
         }, new View.OnClickListener() {

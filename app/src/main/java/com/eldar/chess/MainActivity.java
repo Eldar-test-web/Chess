@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         state.load(this);
 
-        getWindow().setStatusBarColor(0xFF22201E);
+        getWindow().setStatusBarColor(0x00000000);
         getWindow().setNavigationBarColor(0xFF211F1C);
 
         LinearLayout root = new LinearLayout(this);
